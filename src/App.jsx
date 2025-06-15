@@ -6,6 +6,7 @@ import CarbonKarma from './pages/Carbonkarma.jsx';
 import Ecosenseai from './pages/Ecosensepage.jsx';
 import Footer from './components/Footer.jsx';
 import Home from './pages/Home.jsx';
+import RepackAI from './pages/RepackAI.jsx';
 
 const App = () => {
   return (
@@ -14,10 +15,9 @@ const App = () => {
       <Routes>
        
         <Route path="/ecosense-ai" element={<Ecosenseai/>} />
-        <Route path="/" element={<Home/>} />
-        <Route path="/ecosense-ai" element={<div>EcoSense AI Page</div>} />
+        <Route path="/" element={<Home/>} /> 
         <Route path="/greengather" element={<div>GreenGather Page</div>} />
-        <Route path="/repack-ai" element={<div>Repack AI Page</div>} />
+        <Route path="/repack-ai" element={<RepackAI/>} />
         <Route path="/carbon-karma" element={<CarbonKarma/>} />
         <Route path="/ecochain-ai" element={<Ecochain/>} />
       </Routes>

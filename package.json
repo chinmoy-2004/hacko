@@ -17,6 +17,7 @@
     "react-router-dom": "^7.6.2",
     "sonner": "^2.0.5",
     "swiper": "^11.2.8",
+    "tailwind-animate": "^0.2.10",
     "tailwindcss": "^4.1.10"
   },
   "devDependencies": {
