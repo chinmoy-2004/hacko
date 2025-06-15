@@ -1,4 +1,141 @@
+/* @import "tailwindcss"; */
+
+@config "../tailwind.config.js";
 @import "tailwindcss";
+
+
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 139 69% 96%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 139 69% 19%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 139 20% 95%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 139 20% 95%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 139 69% 19%;
+    --accent-foreground: 210 40% 98%;
+    --amazon-header: 221 39% 11%;
+    --amazon-orange: 36 100% 50%;
+    --eco-green: 139 69% 19%;
+    --eco-green-light: 139 69% 85%;
+    --verification-blue: 217 91% 60%;
+    --warning-orange: 36 100% 50%;
+    --success-green: 139 69% 19%;
+    --error-red: 0 84% 60%;
+    --info-blue: 217 91% 60%;
+    --neutral-gray: 215 16% 47%;
+    --light-bg: 210 40% 98%;
+    --dark-bg: 222 84% 5%;
+    --gradient-start: 139 69% 85%;
+    --gradient-end: 217 91% 85%;
+    --card-hover: 139 20% 97%;
+    --brand-nike: 139 69% 19%;
+    --security-lock: 217 91% 60%;
+    --trust-high: 139 69% 19%;
+    --trust-medium: 36 100% 50%;
+    --trust-low: 0 84% 60%;
+    --verification-success: 139 69% 19%;
+    --verification-processing: 217 91% 60%;
+    --verification-pending: 215 16% 47%;
+    --verification-failed: 0 84% 60%;
+    --verification-warning: 36 100% 50%;
+    --verification-info: 217 91% 60%;
+    --button-primary: 139 69% 19%;
+    --button-primary-hover: 139 69% 15%;
+    --button-secondary: 139 20% 95%;
+    --button-secondary-hover: 139 20% 90%;
+    --button-outline: transparent;
+    --button-outline-hover: 139 20% 95%;
+    --button-ghost-hover: 139 20% 95%;
+    --input-border: 214.3 31.8% 91.4%;
+    --input-bg: 0 0% 100%;
+    --input-focus: 222.2 84% 4.9%;
+    --input-placeholder: 215.4 16.3% 46.9%;
+    --badge-success: 139 69% 19%;
+    --badge-success-text: 210 40% 98%;
+    --badge-warning: 36 100% 50%;
+    --badge-warning-text: 210 40% 98%;
+    --badge-error: 0 84% 60%;
+    --badge-error-text: 210 40% 98%;
+    --badge-info: 217 91% 60%;
+    --badge-info-text: 210 40% 98%;
+    --badge-outline: transparent;
+    --badge-outline-text: 222.2 84% 4.9%;
+    --progress-bg: 139 20% 95%;
+    --progress-fill: 139 69% 19%;
+    --card-bg: 0 0% 100%;
+    --card-border: 214.3 31.8% 91.4%;
+    --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    --container-bg: 139 69% 96%;
+    --text-primary: 222.2 84% 4.9%;
+    --text-secondary: 215.4 16.3% 46.9%;
+    --text-success: 139 69% 19%;
+    --text-warning: 36 100% 50%;
+    --text-error: 0 84% 60%;
+    --text-info: 217 91% 60%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
 
 html, body {
   margin: 0;
