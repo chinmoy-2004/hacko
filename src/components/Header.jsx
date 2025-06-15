@@ -81,7 +81,7 @@ const Header = ({ cartItemCount, onCartClick }) => {
                     {/* Search bar */}
                     <div className="flex-1 max-w-2xl">
                         <div className="relative flex">
-                            <select className="bg-green-100 text-black px-2 py-2 border-r border-green-300 rounded-l text-sm">
+                            <select className="bg-green-100 text-black px-2 py-2 border-r border-green-300 rounded-l text-sm outline-none">
                                 <option>All</option>
                                 <option>Eco Products</option>
                                 <option>Sustainable Fashion</option>
@@ -93,7 +93,7 @@ const Header = ({ cartItemCount, onCartClick }) => {
                                 placeholder="Search sustainable products..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="flex-1 px-3 py-2 border-none rounded-none text-black"
+                                className="flex-1 px-3 py-2 border-none rounded-none text-black bg-white outline-0"
                             />
                             <button className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-r">
                                 <Search className="h-4 w-4 text-white" />
