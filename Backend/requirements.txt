@@ -1,0 +1,12 @@
+# streamlit
+# torch
+# torchvision
+# opencv-python
+# Pillow
+# numpy
+
+pypdf2==3.0.1
+reportlab==4.0.9
+qrcode[pil] 
+matplotlib 
+pillow
