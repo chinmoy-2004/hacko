@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Search, ShoppingCart, MapPin, Menu, ChevronDown } from 'lucide-react';
+import { Search, ShoppingCart, MapPin, Menu, ChevronDown, Coins } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
 
 const Header = ({ cartItemCount, onCartClick }) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -118,7 +119,7 @@ const Header = ({ cartItemCount, onCartClick }) => {
                             <div className="text-sm font-bold">& Orders</div>
                         </div>
 
-                        <div className="relative cursor-pointer" onClick={onCartClick}>
+                        <Link to="/cart"><div className="relative cursor-pointer" onClick={onCartClick}>
                             <ShoppingCart className="h-6 w-6" />
                             <span className="ml-1 text-sm font-bold">Cart</span>
                             {cartItemCount > 0 && (
@@ -127,23 +128,36 @@ const Header = ({ cartItemCount, onCartClick }) => {
                                 </span>
                             )}
                         </div>
+                        </Link>
                     </div>
                 </div>
             </div>
 
             {/* Navigation bar */}
-            <div className="bg-[#1a2b1a] px-4 py-2">
-                <div className="w-full flex items-center space-x-6 text-sm">
-                    <button className="flex items-center text-white hover:bg-white/10 p-2">
-                        <Menu className="h-4 w-4 mr-2" /> All
-                    </button>
-                    <a href="#" className="text-white hover:text-green-300">Today's Green Deals</a>
-                    <a href="#" className="text-white hover:text-green-300">Customer Service</a>
-                    <a href="#" className="text-white hover:text-green-300">Eco Registry</a>
-                    <a href="#" className="text-white hover:text-green-300">Gift Cards</a>
-                    <a href="#" className="text-white hover:text-green-300">Sell Sustainable</a>
-                </div>
-            </div>
+<div className="bg-[#1a2b1a] px-4 py-3 flex justify-between items-center">
+    <div className="flex items-center space-x-6 text-sm">
+        <button className="flex items-center text-white hover:bg-white/10 p-2">
+            <Menu className="h-4 w-4 mr-2" /> All
+        </button>
+        <a href="#" className="text-white hover:text-green-300">Today's Green Deals</a>
+        <a href="#" className="text-white hover:text-green-300">Customer Service</a>
+        <a href="#" className="text-white hover:text-green-300">Eco Registry</a>
+        <a href="#" className="text-white hover:text-green-300">Gift Cards</a>
+        <a href="#" className="text-white hover:text-green-300">Sell Sustainable</a>
+    </div>
+    <div className="flex items-center space-x-6 text-sm mr-2">
+        <div className='flex items-center text-white hover:text-green-300'>
+            <Coins className="w-5 h-5 mr-1 text-yellow-400" />
+            <p>205 coins</p>
+        </div>
+        <Link to="/user-dashboard">
+        <button className='p-2 bg-green-700 rounded-xl px-4 uppercase text-white hover:bg-green-800 cursor-pointer'>
+            User Dashboard
+        </button>
+        </Link>
+    </div>
+</div>
+
         </header>
     );
 };

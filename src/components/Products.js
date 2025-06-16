@@ -1,5 +1,6 @@
 const products = [
   {
+    id: "p1",
     title: "Bamboo Fiber Dinnerware Set",
     image: "https://i.imgur.com/l9IGZpP.png",
     discount: "25% OFF",
@@ -16,6 +17,7 @@ const products = [
     originalPrice: 39.99,
   },
   {
+    id: "p2",
     title: "Organic Cotton Reusable Produce Bags",
     image: "https://i.imgur.com/FBLw1zN.png",
     discount: "",
@@ -31,6 +33,7 @@ const products = [
     price: 14.99,
   },
   {
+    id: "p3",
     title: "Solar-Powered Garden Lights",
     image: "https://i.imgur.com/1VznX0E.png",
     discount: "BESTSELLER",
@@ -47,6 +50,7 @@ const products = [
     originalPrice: 44.99,
   },
   {
+    id: "p4",
     title: "Natural Loofah Body Scrubbers",
     image: "https://i.imgur.com/rbF3gfD.png",
     discount: "",
@@ -62,6 +66,7 @@ const products = [
     price: 12.99,
   },
   {
+    id: "p5",
     title: "Reusable Stainless Steel Straws",
     image: "https://i.imgur.com/mTD9Rph.png",
     discount: "10% OFF",
@@ -78,6 +83,7 @@ const products = [
     originalPrice: 10.99,
   },
   {
+    id: "p6",
     title: "Eco-Friendly Bamboo Toothbrush Set",
     image: "https://i.imgur.com/Hv3KDfD.png",
     discount: "",
@@ -93,6 +99,7 @@ const products = [
     price: 7.99,
   },
   {
+    id: "p7",
     title: "Recycled Paper Notebooks",
     image: "https://i.imgur.com/4eFWBzH.png",
     discount: "15% OFF",
@@ -109,6 +116,7 @@ const products = [
     originalPrice: 6.49,
   },
   {
+    id: "p8",
     title: "Plant-Based Laundry Detergent",
     image: "https://i.imgur.com/s7kBqX7.png",
     discount: "",

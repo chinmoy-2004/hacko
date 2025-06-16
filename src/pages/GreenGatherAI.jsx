@@ -75,7 +75,6 @@ const GreenGather = () => {
             {/* Product Recommendations */}
             <div className="container mx-auto py-8">
                 <h2 className="text-3xl font-bold mb-6">Product Recommendations</h2>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {recommendedProducts.map(product => (
                         <div key={product.id} className="border rounded-lg shadow-sm p-4 bg-white hover:shadow-lg transition">

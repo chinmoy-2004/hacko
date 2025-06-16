@@ -8,10 +8,16 @@ import Footer from './components/Footer.jsx';
 import Home from './pages/Home.jsx';
 import RepackAI from './pages/RepackAI.jsx';
 import GreenGather from './pages/GreenGatherAI.jsx';
+import UserDashboard from './pages/UserDashboard.jsx';
+import Cart from './pages/Cart.jsx';
+import { CartProvider } from './context/CartContext.jsx';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
   return (
     <>
+    <CartProvider>
       <Header cartItemCount={3} onCartClick={() => {}} />
       <Routes>
        
@@ -21,8 +27,12 @@ const App = () => {
         <Route path="/repack-ai" element={<RepackAI/>} />
         <Route path="/carbon-karma" element={<CarbonKarma/>} />
         <Route path="/ecochain-ai" element={<Ecochain/>} />
+        <Route path="/user-dashboard" element={<UserDashboard/>} />
+        <Route path="/cart" element={<Cart/>} />
       </Routes>
       <Footer/>
+      <ToastContainer/>
+      </CartProvider>
       </>
   );
 };
