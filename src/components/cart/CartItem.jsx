@@ -62,7 +62,7 @@ const CartItem = ({ item }) => {
               Eco-friendly shipping: {item.delivery || "3-5 days"}
             </p>
             <p className="text-sm font-medium text-green-700 flex items-center gap-1">
-              🌱 {item.plastic}% Plastic Reduced
+              🌱 {item.plastic}% Carbon Reduced
             </p>
           </div>
 
