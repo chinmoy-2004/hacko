@@ -4,6 +4,7 @@ from models import repack
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
 UPLOAD_FOLDER = 'static/uploads/'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -24,14 +25,14 @@ def index():
 
         shape, dims, box_image = repack.detect_shape_and_box(filepath)
 
-        return render_template('index.html',
+        return render_template('indexrepack.html',
                                uploaded=True,
                                shape=shape,
                                dims=dims,
                                box_image=url_for('static', filename='box_shapes/' + box_image),
                                input_image=url_for('static', filename='uploads/' + filename))
 
-    return render_template('index.html', uploaded=False)
+    return render_template('indexrepack.html', uploaded=False)
 
 if __name__ == "__main__":
     app.run(debug=True)
