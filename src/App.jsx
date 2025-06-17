@@ -8,6 +8,9 @@ import Footer from './components/Footer.jsx';
 import Home from './pages/Home.jsx';
 import RepackAI from './pages/RepackAI.jsx';
 import GreenGather from './pages/GreenGatherAI.jsx';
+import ApplyCertificate from './pages/Applyfoecertecochain.jsx';
+import { Toaster } from 'react-hot-toast';
+
 
 const App = () => {
   return (
@@ -21,8 +24,10 @@ const App = () => {
         <Route path="/repack-ai" element={<RepackAI/>} />
         <Route path="/carbon-karma" element={<CarbonKarma/>} />
         <Route path="/ecochain-ai" element={<Ecochain/>} />
+        <Route path="/applyforcertification" element={<ApplyCertificate/>}/>
       </Routes>
       <Footer/>
+      <Toaster/>
       </>
   );
 };

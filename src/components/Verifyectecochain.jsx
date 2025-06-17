@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import useEcochainStore   from '../store/ecochain.store.js';
 import { Info, Upload } from 'lucide-react';
 
 // Simple reusable components
@@ -60,15 +60,27 @@ const Badge = ({ children, className = '', variant = 'default' }) => {
 const VerifyECT = () => {
   const [ectId, setEctId] = useState('');
   const [result, setResult] = useState(null);
+  const {verifyect} = useEcochainStore();
 
-  const handleVerify = () => {
-    setResult({
-      status: 'Valid',
-      certificateBody: 'GreenCert International',
-      carbonSaved: '14.2kg CO₂',
-      productName: 'Organic Cotton T-Shirt',
-      expiryDate: '2025-12-31'
-    });
+  const handleVerify = async() => {
+     const data = await verifyect(ectId); // wait for verified data
+
+  if (!data) return;
+
+  setResult({
+    status: 'Valid',
+    certificateBody: data.certifying_body,
+    carbonSaved: data.carbon_kg,
+    productName: data.product_name,
+    productId: data.product_id,
+    issueDate: new Date(data.issued_at).toLocaleDateString(),
+    expiryDate: new Date(
+      new Date(data.issued_at).getTime() + 365 * 24 * 60 * 60 * 1000
+    ).toLocaleDateString(),
+    manufacturer: data.manufacturer,
+    materials: data.materials,
+    category: data.category
+  });
   };
 
   return (
@@ -88,21 +100,26 @@ const VerifyECT = () => {
           />
         </div>
 
-        <Button onClick={handleVerify} className="w-full">
+        <Button onClick={handleVerify} className="w-full cursor-pointer">
           Verify Certificate
         </Button>
 
         {result && (
           <div className="p-4 border rounded-lg bg-gray-50">
             <div className="flex items-center space-x-2 mb-3">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <div className="h-5 w-5 text-green-600" ></div>
               <Badge variant="success">{result.status}</Badge>
             </div>
 
             <div className="space-y-2 text-sm">
               <div><strong>Product:</strong> {result.productName}</div>
+              <div><strong>Product ID:</strong> {result.productId}</div>
               <div><strong>Certificate Body:</strong> {result.certificateBody}</div>
-              <div><strong>Carbon Saved:</strong> {result.carbonSaved}</div>
+              <div><strong>Category:</strong> {result.category}</div>
+              <div><strong>Materials:</strong> {result.materials}</div>
+              <div><strong>Manufacturer:</strong> {result.manufacturer}</div>
+              <div><strong>Carbon Saved:</strong> {result.carbonSaved} kg of Co2</div>
+              <div><strong>Issued At:</strong> {result.issueDate}</div>
               <div><strong>Expires:</strong> {result.expiryDate}</div>
             </div>
           </div>

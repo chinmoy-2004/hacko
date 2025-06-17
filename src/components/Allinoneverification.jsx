@@ -127,6 +127,7 @@ const useToast = () => {
 };
 
 const AllInOneVerification = () => {
+  const [isOpenmodal, setIsOpenmodal] = useState(false);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(true);
   const [formData, setFormData] = useState({
     businessName: '',
@@ -192,6 +193,7 @@ const AllInOneVerification = () => {
       title: "Registration Submitted",
       description: "Your shop registration has been submitted for verification.",
     });
+    setIsOpenmodal(true);
   };
 
   const getStatusIcon = (status) => {
@@ -531,7 +533,7 @@ const AllInOneVerification = () => {
 
             <Button
               onClick={handleSubmit}
-              className="w-full bg-[hsl(var(--eco-green))] hover:bg-[hsl(var(--eco-green))]/90 text-[hsl(var(--primary-foreground))]"
+              className="w-full bg-[hsl(var(--eco-green))] cursor-pointer hover:bg-[hsl(var(--eco-green))]/90 text-[hsl(var(--primary-foreground))]"
               size="lg"
             >
               🔍 Submit for Verification
@@ -539,8 +541,9 @@ const AllInOneVerification = () => {
           </CardContent>
         )}
       </Card>
-
-      {/* AI Verification */}
+  
+       {/* AI Verification  */}
+    {isOpenmodal && (   
       <Card className="w-full">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -629,9 +632,10 @@ const AllInOneVerification = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card>)}
 
       {/* Seller ID Generator */}
+      {isOpenmodal && (
       <Card className="w-full">
         <CardHeader>
           <div className="flex items-center space-x-3">
@@ -760,9 +764,10 @@ const AllInOneVerification = () => {
             Link to EcoChain Trace
           </Button>
         </CardContent>
-      </Card>
+      </Card>)}
 
       {/* Security Panel */}
+      {isOpenmodal && (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* AI Fraud Detection */}
         <Card>
@@ -915,9 +920,10 @@ const AllInOneVerification = () => {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </div>)}
 
       {/* Visual Flow */}
+      {isOpenmodal && (
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-xl">🧬 Verification Journey</CardTitle>
@@ -990,9 +996,11 @@ const AllInOneVerification = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card>)}
     </div>
   );
 };
+
+ 
 
 export default AllInOneVerification;
