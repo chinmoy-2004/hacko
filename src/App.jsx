@@ -16,8 +16,7 @@ const App = () => {
   return (
     <>
       <Header cartItemCount={3} onCartClick={() => {}} />
-      <Routes>
-       
+      <Routes> 
         <Route path="/ecosense-ai" element={<Ecosenseai/>} />
         <Route path="/" element={<Home/>} /> 
         <Route path="/greengather" element={<GreenGather/>} />
