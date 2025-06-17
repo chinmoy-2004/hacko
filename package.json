@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.10",
     "axios": "^1.10.0",
+    "framer-motion": "^12.18.1",
     "i": "^0.3.7",
     "lucide-react": "^0.515.0",
     "react": "^19.1.0",
@@ -24,8 +25,8 @@
     "swiper": "^11.2.8",
     "tailwind-animate": "^0.2.10",
     "tailwindcss": "^4.1.10",
-    "zustand": "^5.0.5",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

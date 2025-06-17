@@ -15,6 +15,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ApplyCertificate from './pages/Applyfoecertecochain.jsx';
 import { Toaster } from 'react-hot-toast';
+import Educationsection from './components/Educationsection/Education.jsx';
 
 
 const App = () => {
@@ -24,7 +25,7 @@ const App = () => {
       <Header cartItemCount={3} onCartClick={() => {}} />
       <Routes> 
         <Route path="/ecosense-ai" element={<Ecosenseai/>} />
-        <Route path="/" element={<Home/>} /> 
+        <Route path="/" element={<Home/>} />
         <Route path="/greengather" element={<GreenGather/>} />
         <Route path="/repack-ai" element={<RepackAI/>} />
         <Route path="/carbon-karma" element={<CarbonKarma/>} />
