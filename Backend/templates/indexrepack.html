@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shape-Based Packaging</title>
+</head>
+<body>
+    <h2>Upload an Object Image</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="shapeImage" required>
+        <button type="submit">Upload</button>
+    </form>
+
+    {% if uploaded %}
+        <h3>Original Image:</h3>
+        <img src="{{ input_image }}" width="200"><br>
+
+        <h3>Detected Shape: {{ shape }}</h3>
+        <p>Estimated Box Dimensions (px): {{ dims[0] }} × {{ dims[1] }} × {{ dims[2] }}</p>
+
+        <h3>Recommended Box Type:</h3>
+        <img src="{{ box_image }}" width="250">
+    {% endif %}
+</body>
+</html>
