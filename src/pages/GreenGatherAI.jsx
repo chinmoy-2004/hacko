@@ -1,108 +1,122 @@
 import React, { useState } from "react";
 import { Package, Coins, Star, Leaf, ShoppingCart, ShoppingBasket, Menu, X } from "lucide-react";
+import { useCart } from "../context/CartContext";
+import { toast } from "react-toastify";
 
 const GreenGather = () => {
-    const recommendedProducts = [
-        {
-            id: 1,
-            name: "Bamboo Toothbrush",
-            price: "₹299",
-            originalPrice: "₹399",
-            coins: "50",
-            savings: "Save 20%",
-            image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop",
-            carbonSavings: "15% less carbon"
-        },
-        {
-            id: 2,
-            name: "Organic Rice 5kg",
-            price: "₹749",
-            originalPrice: "₹899",
-            coins: "75",
-            savings: "Save 17%",
-            image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop",
-            carbonSavings: "25% less carbon"
-        },
-        {
-            id: 3,
-            name: "Eco Cotton Towels",
-            price: "₹1,299",
-            originalPrice: "₹1,599",
-            coins: "120",
-            savings: "Save 19%",
-            image: "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=400&h=300&fit=crop",
-            carbonSavings: "30% less carbon"
-        },
-        {
-            id: 4,
-            name: "Natural Soap Pack",
-            price: "₹449",
-            originalPrice: "₹599",
-            coins: "65",
-            savings: "Save 25%",
-            image: "https://images.unsplash.com/photo-1501286353178-1ec881214838?w=400&h=300&fit=crop",
-            carbonSavings: "20% less carbon"
-        }
-    ];
+  const { dispatch } = useCart();
+  const [showModal, setShowModal] = useState(false);
 
-    const [showModal, setShowModal] = useState(false);
+  const recommendedProducts = [
+    {
+      id: 1,
+      title: "Bamboo Toothbrush",
+      price: 299,
+      originalPrice: 399,
+      coins: "50",
+      savings: "Save 20%",
+      image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop",
+      plastic: 15,
+    },
+    {
+      id: 2,
+      title: "Organic Rice 5kg",
+      price: 749,
+      originalPrice: 899,
+      coins: "75",
+      savings: "Save 17%",
+      image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop",
+      plastic: 25,
+    },
+    {
+      id: 3,
+      title: "Eco Cotton Towels",
+      price: 1299,
+      originalPrice: 1599,
+      coins: "120",
+      savings: "Save 19%",
+      image: "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=400&h=300&fit=crop",
+      plastic: 30,
+    },
+    {
+      id: 4,
+      title: "Natural Soap Pack",
+      price: 449,
+      originalPrice: 599,
+      coins: "65",
+      savings: "Save 25%",
+      image: "https://images.unsplash.com/photo-1501286353178-1ec881214838?w=400&h=300&fit=crop",
+      plastic: 20,
+    },
+  ];
+
+  const handleAddToCart = (product) => {
+    dispatch({ type: "ADD_TO_CART", payload: product });
+    toast.success(`${product.title} added to cart!`);
+  };
 
   const productA = {
     name: "Organic Detergent A",
-    price: "₹299",
+    price: 299,
     rating: 4.5,
     carbonSaved: 25,
     coins: 150,
     stock: "Available",
-    image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=200&h=200&fit=crop"
+    image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=200&h=200&fit=crop",
   };
 
   const productB = {
     name: "Eco Detergent B",
-    price: "₹349",
+    price: 349,
     rating: 4.2,
     carbonSaved: 18,
     coins: 100,
     stock: "Limited Stock",
-    image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=200&h=200&fit=crop"
+    image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=200&h=200&fit=crop",
   };
 
   const betterProduct = productA.carbonSaved > productB.carbonSaved ? productA : productB;
 
-    return (
-        <div className="min-h-screen bg-gray-50 text-gray-900">
-
-            {/* Product Recommendations */}
-            <div className="container mx-auto py-8">
-                <h2 className="text-3xl font-bold mb-6">Product Recommendations</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {recommendedProducts.map(product => (
-                        <div key={product.id} className="border rounded-lg shadow-sm p-4 bg-white hover:shadow-lg transition">
-                            <div className="relative mb-4">
-                                <img src={product.image} alt={product.name} className="w-full h-48 object-cover rounded-md" />
-                                <div className="absolute top-2 right-2 bg-green-200 text-green-700 text-xs px-3 py-1 rounded-full">{product.savings}</div>
-                            </div>
-                            <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                            <div className="flex items-center mb-2">
-                                <span className="text-xl font-bold">{product.price}</span>
-                                <span className="ml-2 text-gray-500 line-through">{product.originalPrice}</span>
-                            </div>
-                            <div className="flex justify-between text-sm mb-4">
-                                <div className="flex items-center">
-                                    <Coins className="w-4 h-4 mr-1 text-yellow-400" />
-                                    +{product.coins} Coins
-                                </div>
-                                <div className="flex items-center text-green-600">
-                                    <Leaf className="w-4 h-4 mr-1" />
-                                    {product.carbonSavings}
-                                </div>
-                            </div>
-                            <button className="w-full bg-orange-400 hover:bg-orange-500 text-white font-semibold py-2 rounded-md">Add to Cart</button>
-                        </div>
-                    ))}
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      {/* Product Recommendations */}
+      <div className="container mx-auto py-8">
+        <h2 className="text-3xl font-bold mb-6">Product Recommendations</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {recommendedProducts.map((product) => (
+            <div key={product.id} className="border rounded-lg shadow-sm p-4 bg-white hover:shadow-lg transition">
+              <div className="relative mb-4">
+                <img src={product.image} alt={product.name} className="w-full h-48 object-cover rounded-md" />
+                <div className="absolute top-2 right-2 bg-green-200 text-green-700 text-xs px-3 py-1 rounded-full">
+                  {product.savings}
                 </div>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
+              <div className="flex items-center mb-2">
+                <span className="text-xl font-bold">₹{product.price}</span>
+                <span className="ml-2 text-gray-500 line-through">₹{product.originalPrice}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-4">
+                <div className="flex items-center">
+                  <Coins className="w-4 h-4 mr-1 text-yellow-400" />
+                  +{product.coins} Coins
+                </div>
+                <div className="flex items-center text-green-600">
+                  <Leaf className="w-4 h-4 mr-1" />
+                  {product.plastic}% less carbon
+                </div>
+              </div>
+              <button
+                className="w-full bg-orange-400 hover:bg-orange-500 text-white font-semibold py-2 rounded-md"
+                onClick={() => handleAddToCart(product)}
+              >
+                Add to Cart
+              </button>
             </div>
+          ))}
+        </div>
+      </div>
+
 
             {/* Subscription Box */}
             <div className="container mx-auto py-8">
