@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Certificate Generator</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 700px;
+            margin: auto;
+            padding: 20px;
+        }
+        form {
+            margin-bottom: 40px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            font-size: 16px;
+        }
+        h2 {
+            color: teal;
+        }
+    </style>
+</head>
+<body>
+    <h1>Generate Certificates</h1>
+
+    <h2>Product Certificate</h2>
+    <form action="/generate_product_certificate" method="post">
+        <input type="text" name="seller_name" placeholder="Seller Name" required>
+        <input type="text" name="product_name" placeholder="Product Name" required>
+        <input type="text" name="product_id" placeholder="Product ID" required>
+        <input type="text" name="ect_no" placeholder="ECT No" required>
+        <input type="text" name="hash_no" placeholder="Hash No" required>
+        <button type="submit">Generate Product Certificate</button>
+    </form>
+
+    <h2>Seller Certificate</h2>
+    <form action="/generate_seller_certificate" method="post">
+        <input type="text" name="seller_name" placeholder="Seller Name" required>
+        <input type="text" name="seller_id" placeholder="Seller ID" required>
+        <button type="submit">Generate Seller Certificate</button>
+    </form>
+</body>
+</html>

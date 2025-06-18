@@ -1,0 +1,9 @@
+{
+  "sellers": [
+    {
+      "name": "John Doe",
+      "pan": "EncryptedPANHere",
+      "gst": "EncryptedGSTHere"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Karma - Estimate Your Footprint</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Carbon Karma</h1>
+        <p>Estimate the carbon footprint of your items</p>
+        
+        <div class="methods">
+            <div class="method">
+                <h2>Upload an Image</h2>
+                <form action="/estimate" method="post" enctype="multipart/form-data">
+                    <input type="file" name="image" accept="image/*">
+                    <button type="submit">Analyze Image</button>
+                </form>
+                <p>We'll identify materials in your photo and estimate their carbon footprint.</p>
+            </div>
+            
+            <div class="method">
+                <h2>Or Describe Your Item</h2>
+                <form action="/estimate" method="post">
+                    <textarea name="description" placeholder="e.g., 'plastic water bottle' or 'aluminum can'"></textarea>
+                    <button type="submit">Estimate from Description</button>
+                </form>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('history') }}" class="history-link">View Your Carbon Reduction History</a>
+    </div>
+</body>
+</html>

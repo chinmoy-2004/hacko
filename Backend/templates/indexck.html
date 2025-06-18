@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Karma - Footprint Estimator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Additional styles for single-page layout */
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f1f1f1;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab.active {
+            background: #27ae60;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Carbon Karma</h1>
+        <p>Estimate and track your carbon footprint</p>
+        
+        <div class="tab-container">
+            <div class="tab active" onclick="showTab('estimate-tab')">Estimate Footprint</div>
+            <div class="tab" onclick="showTab('history-tab')">Your History</div>
+        </div>
+        
+        <!-- Estimation Tab -->
+        <div id="estimate-tab" class="tab-content active">
+            <div class="methods">
+                <div class="method">
+                    <h2>Upload an Image</h2>
+                    <form id="image-form" action="/estimate" method="post" enctype="multipart/form-data">
+                        <input type="file" name="image" accept="image/*" required>
+                        <button type="submit">Analyze Image</button>
+                    </form>
+                    <p>We'll identify materials in your photo and estimate their carbon footprint.</p>
+                </div>
+                
+                <div class="method">
+                    <h2>Or Describe Your Item</h2>
+                    <form id="description-form" action="/estimate" method="post">
+                        <textarea name="description" placeholder="e.g., 'plastic water bottle' or 'aluminum can'" required></textarea>
+                        <button type="submit">Estimate from Description</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Results Section (initially hidden) -->
+            <div id="results-section" class="hidden">
+                <header>
+                    <h2>Carbon Footprint Estimate</h2>
+                    <p class="subtitle">Based on your analysis</p>
+                </header>
+
+                <main>
+                    <div id="matched-items-section">
+                        <!-- Filled by JavaScript -->
+                    </div>
+
+                    <div id="unmatched-items-section">
+                        <!-- Filled by JavaScript -->
+                    </div>
+
+                    <section class="summary">
+                        <div class="total-carbon">
+                            <h3>Total Estimated Carbon Footprint:</h3>
+                            <div class="carbon-display">
+                                <span id="total-carbon-value">0</span>
+                                <span class="carbon-unit">grams CO<sub>2</sub></span>
+                            </div>
+                        </div>
+
+                        <div class="equivalents">
+                            <h4>This is equivalent to:</h4>
+                            <div class="equivalents-grid">
+                                <div class="equivalent-item">
+                                    <span id="miles-value" class="value">0</span>
+                                    <span class="label">miles driven</span>
+                                </div>
+                                <div class="equivalent-item">
+                                    <span id="tv-value" class="value">0</span>
+                                    <span class="label">hours of TV</span>
+                                </div>
+                                <div class="equivalent-item">
+                                    <span id="bags-value" class="value">0</span>
+                                    <span class="label">plastic bags</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="suggestions">
+                        <h3>Reduction Suggestions:</h3>
+                        <ul class="suggestions-list">
+                            <li>♻️ Recycle items whenever possible</li>
+                            <li>🔄 Choose reusable alternatives</li>
+                            <li>🌱 Opt for lower carbon footprint products</li>
+                        </ul>
+                    </section>
+                </main>
+            </div>
+        </div>
+        
+        <!-- History Tab -->
+        <div id="history-tab" class="tab-content">
+            <div class="total-saved">
+                <h2>Total Carbon Saved:</h2>
+                <p class="big-number">{{ total_saved or 0 }} grams of CO2</p>
+            </div>
+            
+            <h2>Your Actions:</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Item</th>
+                        <th>Carbon Saved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if history %}
+                        {% for action in history %}
+                            <tr>
+                                <td>{{ action[2] }}</td>
+                                <td>{{ action[1] }}</td>
+                                <td>{{ action[1] }}g</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3">No history yet. Make your first estimate!</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function showTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Form submission handling (you'll need to implement the actual AJAX calls)
+        document.getElementById('image-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Here you would add AJAX call to submit the image
+            // Then process the response and show results
+            simulateAnalysis();
+        });
+
+        document.getElementById('description-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Here you would add AJAX call to submit the description
+            // Then process the response and show results
+            simulateAnalysis();
+        });
+
+        // For demo purposes - replace with actual API calls
+        function simulateAnalysis() {
+            // Show loading state
+            document.getElementById('results-section').classList.remove('hidden');
+            
+            // Simulate API response (replace with actual data from your backend)
+            setTimeout(() => {
+                // Update the UI with simulated data
+                document.getElementById('total-carbon-value').textContent = '1550';
+                document.getElementById('miles-value').textContent = '3.84';
+                document.getElementById('tv-value').textContent = '1.29';
+                document.getElementById('bags-value').textContent = '31';
+                
+                // Update matched items
+                const matchedItems = [
+                    {item: 'Water Bottle', confidence: 91.4, carbon: 500},
+                    {item: 'Shaker', confidence: 95.6, carbon: 1000},
+                    {item: 'Cup', confidence: 98.4, carbon: 50}
+                ];
+                
+                let matchedHtml = '<h3>Items with Carbon Estimates:</h3><div class="items-grid">';
+                matchedItems.forEach(item => {
+                    matchedHtml += `
+                        <div class="item-card">
+                            <h4>${item.item}</h4>
+                            <p class="confidence">Confidence: ${item.confidence}%</p>
+                            <p class="carbon-estimate">${item.carbon}g CO<sub>2</sub></p>
+                        </div>
+                    `;
+                });
+                matchedHtml += '</div>';
+                document.getElementById('matched-items-section').innerHTML = matchedHtml;
+                
+                // Scroll to results
+                document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

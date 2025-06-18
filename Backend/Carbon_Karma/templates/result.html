@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Footprint Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Carbon Footprint Estimate</h1>
+            <p class="subtitle">Based on your image analysis</p>
+        </header>
+
+        <main>
+            {% if result.matched_items %}
+            <section class="matched-items">
+                <h2>Items with Carbon Estimates:</h2>
+                <div class="items-grid">
+                    {% for item in result.matched_items %}
+                    <div class="item-card">
+                        <h3>{{ item.item }}</h3>
+                        <p class="confidence">Confidence: {{ item.confidence|round(1) }}%</p>
+                        <p class="carbon-estimate">{{ item.carbon }}g CO<sub>2</sub></p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if result.unmatched_items %}
+            <section class="unmatched-items">
+                <h2>Detected Items (No Estimates Available):</h2>
+                <ul class="unmatched-list">
+                    {% for item in result.unmatched_items %}
+                    <li>
+                        <span class="item-name">{{ item.name }}</span>
+                        <span class="confidence-badge">{{ item.confidence|round(1) }}%</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+
+            <section class="summary">
+                <div class="total-carbon">
+                    <h2>Total Estimated Carbon Footprint:</h2>
+                    <div class="carbon-display">
+                        <span class="carbon-value">{{ result.total_carbon }}</span>
+                        <span class="carbon-unit">grams CO<sub>2</sub></span>
+                    </div>
+                </div>
+
+                <div class="equivalents">
+                    <h3>This is equivalent to:</h3>
+                    <div class="equivalents-grid">
+                        <div class="equivalent-item">
+                            <span class="value">{{ (result.total_carbon / 404)|round(2) }}</span>
+                            <span class="label">miles driven in a car</span>
+                        </div>
+                        <div class="equivalent-item">
+                            <span class="value">{{ (result.total_carbon / 1200)|round(2) }}</span>
+                            <span class="label">hours of TV watched</span>
+                        </div>
+                        <div class="equivalent-item">
+                            <span class="value">{{ (result.total_carbon / 50)|round(2) }}</span>
+                            <span class="label">plastic bags produced</span>
+                        </div>
+                        <div class="equivalent-item">
+                            <span class="value">{{ (result.total_carbon / 8)|round(2) }}</span>
+                            <span class="label">smartphone charges</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="suggestions">
+                <h2>Reduction Suggestions:</h2>
+                <ul class="suggestions-list">
+                    <li>♻️ Recycle items whenever possible</li>
+                    <li>🔄 Choose reusable alternatives</li>
+                    <li>🌱 Opt for products with lower carbon footprints</li>
+                    <li>📉 Reduce consumption of single-use items</li>
+                </ul>
+            </section>
+        </main>
+
+        <footer>
+            <a href="{{ url_for('index') }}" class="action-button">Estimate Another Item</a>
+            <a href="{{ url_for('history') }}" class="secondary-button">View Your History</a>
+            <p class="disclaimer">Note: These estimates are approximations based on average carbon footprint data.</p>
+        </footer>
+    </div>
+</body>
+</html>

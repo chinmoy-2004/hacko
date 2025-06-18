@@ -1,49 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Certificate Generator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Project Dashboard</title>
     <style>
         body {
-            font-family: Arial;
-            max-width: 700px;
-            margin: auto;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-        form {
-            margin-bottom: 40px;
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        input, button {
-            padding: 10px;
-            margin: 5px 0;
+        .container {
+            max-width: 800px;
             width: 100%;
-            font-size: 16px;
+            padding: 2rem;
         }
-        h2 {
-            color: teal;
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #000;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        .card h2 {
+            font-size: 1.25rem;
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+            color: #1c1e21;
+        }
+        .card p {
+            font-size: 0.95rem;
+            color: #606770;
+            margin-bottom: 1.5rem;
+            min-height: 40px;
+        }
+        .card a {
+            display: inline-block;
+            background-color: #1877f2;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .card a:hover {
+            background-color: #166fe5;
         }
     </style>
 </head>
 <body>
-    <h1>Generate Certificates</h1>
-
-    <h2>Product Certificate</h2>
-    <form action="/generate_product_certificate" method="post">
-        <input type="text" name="seller_name" placeholder="Seller Name" required>
-        <input type="text" name="product_name" placeholder="Product Name" required>
-        <input type="text" name="product_id" placeholder="Product ID" required>
-        <input type="text" name="ect_no" placeholder="ECT No" required>
-        <input type="text" name="hash_no" placeholder="Hash No" required>
-        <button type="submit">Generate Product Certificate</button>
-    </form>
-
-    <h2>Seller Certificate</h2>
-    <form action="/generate_seller_certificate" method="post">
-        <input type="text" name="seller_name" placeholder="Seller Name" required>
-        <input type="text" name="seller_id" placeholder="Seller ID" required>
-        <button type="submit">Generate Seller Certificate</button>
-    </form>
-</body>
-</html>
+    <div class="container">
+        <header>
+            <h1>Project Hub</h1>
+        </header>
+        <main class="grid">
+            <div class="card">
+                <h2>📦 Shape-Based Packaging</h2>
+                <p>Analyzes object shape from an image to recommend optimal packaging.</p>
+                <a href="/repack">Go to Repackaging</a>
+            </div>
+            <div class="card">
+                <h2>🌿 Eco Recommendations</h2>
+                <p>Personalized and trending recommendations for eco-friendly products.</p>
+                <a href="/recommend">Go to Recommendations</a>
+            </div>
+            <div class="card">
+                <h2>✅ Seller Registration</h2>
+                <p>Secure seller onboarding with fraud detection and ID verification.</p>
+                <a href="/seller">Go to Seller Registration</a>
+            </div>
+            <div class="card">
+                <h2>🌍 Carbon Karma</h2>
+                <p>Estimates item carbon footprint using image or text analysis.</p>
+                <a href="/carbon">Go to Carbon Karma</a>
+            </div>
+            <div class="card">
+                <h2>📜 Certificate Generator</h2>
+                <p>Generates PDF certificates for verified sellers and eco-products.</p>
+                <a href="/certificate">Go to Certificates</a>
+            </div>
+            <div class="card">
+                <h2>🔗 Product Blockchain</h2>
+                <p>Tracks product lifecycle and eco-claims on a transparent ledger.</p>
+                <a href="/blockchain">Go to Blockchain Dashboard</a>
+            </div>
+        </main>
+    </div>

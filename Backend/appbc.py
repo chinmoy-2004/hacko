@@ -76,18 +76,16 @@
 #     app.run(debug=True)
 
 # File: app.py
-
 from flask import Flask, request, jsonify, send_file, render_template, redirect, url_for
 import os
 import qrcode
 from io import BytesIO
 from models import blockchain
-from flask_cors import CORS
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-CORS(app, supports_credentials=True)
+
 # Initialize DB on startup
 blockchain.init_db()
 
@@ -121,9 +119,7 @@ def submit():
     }
 
     ect_id = blockchain.submit_product(product_data)
-    products = blockchain.get_all_products()
-    # return redirect(url_for('index'))
-    return products,201
+    return redirect(url_for('index'))
 
 @app.route('/certify/<ect_id>', methods=['POST'])
 def certify(ect_id):
@@ -158,4 +154,4 @@ def get_qr(ect_id):
     return send_file(buf, mimetype='image/png')
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True)

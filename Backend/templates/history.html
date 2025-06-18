@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Carbon Reduction History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Your Carbon Karma History</h1>
+        
+        <div class="total-saved">
+            <h2>Total Carbon Saved:</h2>
+            <p class="big-number">{{ total_saved }} grams of CO2</p>
+        </div>
+        
+        <h2>Your Actions:</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Item</th>
+                    <th>Carbon Saved</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for action in history %}
+                    <tr>
+                        <td>{{ action[2] }}</td>
+                        <td>{{ action[1] }}</td>
+                        <td>{{ action[1] }}g</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <a href="{{ url_for('index') }}" class="back-link">Estimate Another Item</a>
+    </div>
+</body>
+</html>
