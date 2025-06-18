@@ -15,10 +15,13 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ApplyCertificate from './pages/Applyfoecertecochain.jsx';
 import { Toaster } from 'react-hot-toast';
-import Educationsection from './components/Educationsection/Education.jsx';
-
+import useEcosense from './store/ecosense.store.js';
+import RestrictsellerModal from './components/Restrictunverifedseller.jsx';
 
 const App = () => {
+
+  const { issellerverify } = useEcosense();
+
   return (
     <>
     <CartProvider>
@@ -32,7 +35,7 @@ const App = () => {
         <Route path="/ecochain-ai" element={<Ecochain/>} />
         <Route path="/user-dashboard" element={<UserDashboard/>} />
         <Route path="/cart" element={<Cart/>} />
-        <Route path="/applyforcertification" element={<ApplyCertificate/>}/>
+        <Route path="/applyforcertification" element={issellerverify? <ApplyCertificate/> : <RestrictsellerModal/>}/>
       </Routes>
       <Footer/>
       <ToastContainer/>

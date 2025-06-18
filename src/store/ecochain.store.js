@@ -3,25 +3,51 @@ import axiosInstance from "../lib/axios.js";
 import toast from "react-hot-toast";
 
 const useEcochainStore = create((set, get) => ({
-//   productname: "",
-//   productid: "",
-//   carbonkg: NaN,
-//   issuedate: "",
-//   certyfyingbody: "",
-//   manufacturer: "",
-//   materials: "",
-//   category: "",
+  product_name: "",
+  product_id: "",
+  carbon_kg: "",
+  issued_at: "",
+  certifying_body: "",
+  manufacturer: "",
+  materials: "",
+  category: "",
+  block_hash:"",
+
+
+
 
   submitdata: async (formData) => {
     try {
       console.log("Submitting data:", formData);
       const response = await axiosInstance.post('/submit', formData);
       console.log("Response from server:", response.data);
-      if (response.status === 200) {
-        toast.success("Data submitted successfully!");
-      } else {
-        toast.error("Failed to submit data.");
-      }
+      toast.success("Data submitted successfully!");
+      // const {
+      //   product_name,
+      //   product_id,
+      //   carbon_kg,
+      //   issued_at,
+      //   certifying_body,
+      //   manufacturer,
+      //   materials,
+      //   category,
+      //   block_hash
+      // } = response.data;
+
+      //  set({
+      //    product_name,
+      //     product_id,
+      //     carbon_kg,
+      //     issued_at,
+      //     certifying_body,
+      //     manufacturer,
+      //     materials,
+      //     category,
+      //     block_hash
+      //   });
+      console.log(response.data)
+      return response.data; // ✅ Return the data for external use
+
     } catch (error) {
       console.error("Error submitting data:", error);
       toast.error("An error occurred while submitting data.");
@@ -71,6 +97,7 @@ const useEcochainStore = create((set, get) => ({
       return null;
     }
   }
+  
 }));
 
 export default useEcochainStore;

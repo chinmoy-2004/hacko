@@ -1,165 +1,42 @@
-# # File: app.py
-# from flask import Flask, request, jsonify, send_file
-# import os
-# import qrcode
-# from io import BytesIO
-# from models import blockchain
-# from flask import render_template
-
-
-
-
-# app = Flask(__name__)
-# UPLOAD_FOLDER = 'uploads'
-# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-# # Initialize DB on startup
-# blockchain.init_db()
-
-# @app.route('/')
-# def index():
-#     return render_template('index.html')
-
-# @app.route('/submit', methods=['POST'])
-# def submit():
-#     data = request.form.to_dict()
-#     image = request.files['image']
-
-#     if not image:
-#         return jsonify({"error": "Image required"}), 400
-
-#     image_filename = os.path.join(UPLOAD_FOLDER, image.filename)
-#     image.save(image_filename)
-
-#     required_keys = ["product_id", "product_name", "manufacturer", "location", "materials",
-#                      "carbon_kg", "notes", "category"]
-#     for key in required_keys:
-#         if key not in data:
-#             return jsonify({"error": f"Missing field: {key}"}), 400
-
-#     product_data = {
-#         **data,
-#         "carbon_kg": float(data["carbon_kg"]),
-#         "certifying_body": data.get("certifying_body", "Amazon GreenX"),
-#         "image_filename": image_filename
-#     }
-
-#     ect_id = blockchain.submit_product(product_data)
-#     return jsonify({"message": "Product submitted", "ect_id": ect_id})
-
-# @app.route('/certify/<ect_id>', methods=['POST'])
-# def certify(ect_id):
-#     blockchain.certify_product(ect_id)
-#     return jsonify({"message": f"Product {ect_id} certified."})
-
-# @app.route('/product/<ect_id>', methods=['GET'])
-# def get_product(ect_id):
-#     data = blockchain.get_product(ect_id)
-#     if not data:
-#         return jsonify({"error": "Product not found"}), 404
-#     return jsonify(data)
-
-# @app.route('/qr/<ect_id>', methods=['GET'])
-# def get_qr(ect_id):
-#     data = blockchain.get_product(ect_id)
-#     if not data:
-#         return jsonify({"error": "Product not found"}), 404
-
-#     verify_url = f"http://localhost:5000/product/{ect_id}"
-#     qr = qrcode.make(verify_url)
-#     buf = BytesIO()
-#     qr.save(buf)
-#     buf.seek(0)
-#     return send_file(buf, mimetype='image/png')
-
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
-# File: app.py
-
-from flask import Flask, request, jsonify, send_file, render_template, redirect, url_for
+from flask import Flask, request, render_template, send_file
+from models.certificate import add_details_to_certificate, add_seller_details_to_certificate
 import os
-import qrcode
-from io import BytesIO
-from models import blockchain
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = 'static'
+app.config['RESOURCE_FOLDER'] = 'resource'
 
-# Initialize DB on startup
-blockchain.init_db()
+CORS(app, supports_credentials=True)
 
 @app.route('/')
 def index():
-    products = blockchain.get_all_products()
-    return render_template('index.html', products=products)
+    return render_template('index.html')
 
-@app.route('/submit', methods=['POST'])
-def submit():
-    data = request.form.to_dict()
-    image = request.files.get('image')
-    print("Received data:", data)
-    print("Received image:", image)
+@app.route('/generate_product_certificate', methods=['POST'])
+def generate_product_certificate():
+    seller_name = request.form['seller_name']
+    product_name = request.form['product_name']
+    product_id = request.form['product_id']
+    ect_no = request.form['ect_no']
+    hash_no = request.form['hash_no']
 
-    if not image:
-        return jsonify({"error": "Image required"}), 400
+    input_pdf = os.path.join(app.config['RESOURCE_FOLDER'], 'template-p.pdf')
+    output_pdf = os.path.join(app.config['UPLOAD_FOLDER'], 'product_certificate.pdf')
 
-    image_filename = os.path.join(UPLOAD_FOLDER, image.filename)
-    image.save(image_filename)
+    add_details_to_certificate(input_pdf, output_pdf, seller_name, product_name, product_id, ect_no, hash_no)
+    return send_file(output_pdf, as_attachment=True)
 
-    required_keys = ["product_id", "product_name", "manufacturer", "location", "materials",
-                     "carbon_kg", "notes", "category"]
-    for key in required_keys:
-        if key not in data:
-            return jsonify({"error": f"Missing field: {key}"}), 400
+@app.route('/generate_seller_certificate', methods=['POST'])
+def generate_seller_certificate():
+    seller_name = request.form['seller_name']
+    seller_id = request.form['seller_id']
 
-    product_data = {
-        **data,
-        "carbon_kg": float(data["carbon_kg"]),
-        "certifying_body": data.get("certifying_body", "Amazon GreenX"),
-        "image_filename": image_filename
-    }
+    input_pdf = os.path.join(app.config['RESOURCE_FOLDER'], 'template-s.pdf')
+    output_pdf = os.path.join(app.config['UPLOAD_FOLDER'], 'seller_certificate.pdf')
 
-    ect_id = blockchain.submit_product(product_data)
-    return redirect(url_for('index'))
-
-    # return jsonify({"message": "submission done"}), 200
-    
-
-@app.route('/certify/<ect_id>', methods=['POST'])
-def certify(ect_id):
-    blockchain.certify_product(ect_id)
-    return redirect(url_for('index'))
-
-@app.route('/product/<ect_id>', methods=['GET'])
-def get_product(ect_id):
-    data = blockchain.get_product(ect_id)
-    if not data:
-        return jsonify({"error": "Product not found"}), 404
-    return jsonify(data)
-
-@app.route('/verify')
-def verify():
-    ect_id = request.args.get('ect_id')
-    if not ect_id:
-        return jsonify({"error": "ECT ID required"}), 400
-    return redirect(url_for('get_product', ect_id=ect_id))
-
-@app.route('/qr/<ect_id>', methods=['GET'])
-def get_qr(ect_id):
-    data = blockchain.get_product(ect_id)
-    if not data:
-        return jsonify({"error": "Product not found"}), 404
-
-    verify_url = f"http://localhost:5000/product/{ect_id}"
-    qr = qrcode.make(verify_url)
-    buf = BytesIO()
-    qr.save(buf)
-    buf.seek(0)
-    return send_file(buf, mimetype='image/png')
+    add_seller_details_to_certificate(input_pdf, output_pdf, seller_name, seller_id)
+    return send_file(output_pdf, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)

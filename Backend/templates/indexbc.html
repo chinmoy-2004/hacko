@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Product Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">Eco Product Blockchain Dashboard</h2>
+
+        <!-- Upload Form -->
+        <div class="card p-4 mb-4">
+            <h5 class="card-title">Submit New Product</h5>
+            <form action="/submit" method="post" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="product_id" class="form-control" placeholder="Product ID" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" name="product_name" class="form-control" placeholder="Product Name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" name="manufacturer" class="form-control" placeholder="Manufacturer" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" name="location" class="form-control" placeholder="Location" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" name="category" class="form-control" placeholder="Category" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" name="materials" class="form-control" placeholder="Materials" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" step="0.01" name="carbon_kg" class="form-control" placeholder="Carbon Footprint (kg)" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" name="certifying_body" class="form-control" placeholder="Certifying Body" value="Amazon GreenX">
+                    </div>
+                    <div class="col-12">
+                        <textarea name="notes" class="form-control" placeholder="Additional Notes" rows="2"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <input type="file" name="image" class="form-control" required>
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-success">Submit Product</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Search by ECT ID -->
+        <div class="card p-3 mb-4">
+            <h5 class="card-title">Verify Product</h5>
+            <form action="/verify" method="get" class="d-flex">
+                <input type="text" name="ect_id" class="form-control me-2" placeholder="Enter ECT ID" required>
+                <button type="submit" class="btn btn-primary">Verify</button>
+            </form>
+        </div>
+
+        <!-- Product Table -->
+        <div class="card p-3">
+            <h5 class="card-title">All Products</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ECT ID</th>
+                            <th>Product</th>
+                            <th>Manufacturer</th>
+                            <th>Category</th>
+                            <th>Carbon (kg)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in products %}
+                        <tr>
+                            <td>{{ item.ect_id }}</td>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.manufacturer }}</td>
+                            <td>{{ item.category }}</td>
+                            <td>{{ item.carbon_kg }}</td>
+                            <td>{% if item.eco_certified %}<span class="text-success">Certified</span>{% else %}<span class="text-warning">Pending</span>{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

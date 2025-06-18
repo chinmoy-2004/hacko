@@ -10,3 +10,4 @@ reportlab==4.0.9
 qrcode[pil] 
 matplotlib 
 pillow
+cloudinary>=1.30.0
