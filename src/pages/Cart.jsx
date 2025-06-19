@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React from "react";
 import { ArrowLeft, Leaf } from "lucide-react";
 import { Link } from "react-router-dom";
 import CartItem from "../components/cart/CartItem";
@@ -7,22 +7,35 @@ import EcoImpactCard from "../components/cart/EcoImpactCard";
 import SavedItems from "../components/cart/SavedItems";
 import SustainabilityTips from "../components/cart/SustainabilityTips";
 import FrequentlyBoughtTogether from "../components/cart/FrequentlyBoughtTogether";
-import { useCart } from "../context/CartContext";  // ✅ Use context
+import { useCart } from "../context/CartContext";
 
 const Cart = () => {
-  const { cart, dispatch } = useCart();
+  const {
+    cart,
+    dispatch,
+    ecoDiscountEnabled,
+    useGreenCoins,
+    carbonOffset,
+    toggleEcoDiscount,
+    toggleGreenCoins,
+    toggleCarbonOffset,
+    subtotal,
+    discount,
+    shippingBase,
+    shippingFee,
+    carbonOffsetFee,
+    total,
+  } = useCart();
 
-  const [savedItems] = useState([
+  const [savedItems] = React.useState([
     {
       id: "3",
       name: "Solar-Powered Garden Lights",
       price: 3499,
       image: "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400",
-      certifications: ["Energy Star", "Recyclable"]
-    }
+      certifications: ["Energy Star", "Recyclable"],
+    },
   ]);
-
-  const [carbonOffset, setCarbonOffset] = useState(false);
 
   const updateQuantity = (id, newQuantity) => {
     if (newQuantity === 0) {
@@ -37,22 +50,20 @@ const Cart = () => {
   };
 
   const toggleGiftOption = (id) => {
-    const updatedItem = cart.find(item => item.id === id);
+    const updatedItem = cart.find((item) => item.id === id);
     if (updatedItem) {
       dispatch({
         type: "UPDATE_QUANTITY",
-        payload: { id, quantity: updatedItem.quantity }
+        payload: { id, quantity: updatedItem.quantity },
       });
     }
   };
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const discount = 500;
-  const shipping = 0;
-  const carbonOffsetFee = carbonOffset ? 20 : 0;
-  const total = subtotal - discount + shipping + carbonOffsetFee;
-
-  const totalCarbonSaved = cart.reduce((sum, item) => sum + (parseFloat(item.carbonSaved || 0) * item.quantity), 0);
+  // Calculate sustainability stats (can be moved to context if preferred)
+  const totalCarbonSaved = cart.reduce(
+    (sum, item) => sum + (parseFloat(item.carbonSaved || 0) * item.quantity),
+    0
+  );
   const totalWaterSaved = Math.round(totalCarbonSaved * 15);
   const supportedArtisans = cart.length * 3;
 
@@ -68,7 +79,10 @@ const Cart = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <Link to="/" className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 transition-colors">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 transition-colors"
+          >
             <ArrowLeft className="h-4 w-4" />
             Continue Shopping
           </Link>
@@ -103,17 +117,11 @@ const Cart = () => {
 
           <div className="space-y-6">
             <div className="space-y-4">
-              <OrderSummary 
-                cartItems={cart}
-                subtotal={subtotal}
-                discount={discount}
-                shipping={shipping}
-                carbonOffset={carbonOffset}
-                carbonOffsetFee={carbonOffsetFee}
-                onCarbonOffsetToggle={setCarbonOffset}
-                total={total}
+              <OrderSummary
+                // Removed redundant props since OrderSummary consumes from context now
               />
-              <EcoImpactCard 
+
+              <EcoImpactCard
                 totalCarbonSaved={totalCarbonSaved}
                 totalWaterSaved={totalWaterSaved}
                 supportedArtisans={supportedArtisans}
@@ -126,9 +134,7 @@ const Cart = () => {
       </div>
 
       <footer className="bg-gray-900 text-white mt-16">
-        <div className="container mx-auto px-4 py-12">
-          {/* Your footer */}
-        </div>
+        <div className="container mx-auto px-4 py-12">{/* Your footer */}</div>
       </footer>
     </div>
   );

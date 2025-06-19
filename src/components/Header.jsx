@@ -9,10 +9,10 @@ const Header = ({ cartItemCount, onCartClick }) => {
 
     const sustainableApps = [
         { name: "EcoSense AI", path: "/ecosense-ai" },
-        { name: "GreenGather", path: "/greengather" },
+        { name: "GreenGather AI", path: "/greengather" },
         { name: "Repack AI", path: "/repack-ai" },
         { name: "Carbon Karma", path: "/carbon-karma" },
-        { name: "EcoChain AI", path: "/ecochain-ai" }
+        { name: "EcoChain Trace", path: "/ecochain-ai" }
     ];
 
     return (
@@ -23,7 +23,7 @@ const Header = ({ cartItemCount, onCartClick }) => {
                     <div className="text-white/80">📍 Deliver to Your Location</div>
                     <div className="flex space-x-6 text-white/80">
                         <span>Hello, Guest</span>
-                        <span>Returns & Orders</span>
+                       <span>Returns & Orders</span>
                         <span>Your Account</span>
                     </div>
                 </div>
@@ -39,7 +39,7 @@ const Header = ({ cartItemCount, onCartClick }) => {
                                 alt="Amazon Logo"
                                 className="h-7 object-contain text-amber-50"
                             />
-                            <span className="text-xs text-green-400">.com</span>
+                            <span className="text-xs text-green-400">.in</span>
                         </Link>
 
                         <div className="h-6 w-px bg-gray-600"></div>
@@ -50,7 +50,7 @@ const Header = ({ cartItemCount, onCartClick }) => {
                                 onClick={() => setDropdownOpen(!dropdownOpen)}
                             >
                                 <span className="text-lg font-bold text-green-400">GreenX</span>
-                                <span className="text-xs text-green-300">🌿</span>
+                                <span className="text-xs text-green-800">🌿</span>
                                 <ChevronDown className={`h-3 w-3 text-green-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {dropdownOpen && (
@@ -114,14 +114,16 @@ const Header = ({ cartItemCount, onCartClick }) => {
                             <div className="text-sm font-bold">Account & Lists</div>
                         </div>
 
+                        
+
                         <Link className='cursor-pointer' to="/Sellerdashboard">
                           Seller-dashboard
                         </Link>
 
-                        <div className="hidden md:block cursor-pointer">
+                         <Link to="/orders"><div className="hidden md:block cursor-pointer">
                             <div className="text-xs text-gray-300">Returns</div>
                             <div className="text-sm font-bold">& Orders</div>
-                        </div>
+                        </div></Link>
 
                         <Link to="/cart"><div className="relative cursor-pointer" onClick={onCartClick}>
                             <ShoppingCart className="h-6 w-6" />
@@ -148,6 +150,8 @@ const Header = ({ cartItemCount, onCartClick }) => {
         <a href="#" className="text-white hover:text-green-300">Eco Registry</a>
         <a href="#" className="text-white hover:text-green-300">Gift Cards</a>
         <a href="#" className="text-white hover:text-green-300">Sell Sustainable</a>
+        <Link to="/impact" className="text-white hover:text-green-300">Our Impact</Link>
+        <Link to="/edu" className="text-white hover:text-green-300">Sustainability</Link>
     </div>
     <div className="flex items-center space-x-6 text-sm mr-2">
         <div className='flex items-center text-white hover:text-green-300'>

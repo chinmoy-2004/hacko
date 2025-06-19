@@ -140,7 +140,7 @@ addproduct:async (formData) => {
     if(response.data.status=="success"){
     toast.success("Product added successfully!");
     }
-    toast.error("Failed to add product.");
+    else  toast.error("Failed to add product.");
     set({isproductverified:false})
    
   } catch (error) {

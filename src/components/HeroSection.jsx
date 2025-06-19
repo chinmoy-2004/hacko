@@ -3,6 +3,8 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
+import { Link } from "react-router-dom";
+import { Building2, TreePine, PackageCheck, ScanBarcode, CloudCheck} from "lucide-react";
 
 const categories = [
   { title: "Home & Kitchen", image: "/src/assets/home/home.jpg" },
@@ -13,6 +15,15 @@ const categories = [
   { title: "Outdoor Living", image: "/src/assets/home/outdoor.jpg" },
   { title: "Personal Hygiene", image: "/src/assets/home/personal.jpg" },
 ];
+
+const sustainableApps = [
+  { name: "EcoSense AI", path: "/ecosense-ai", color: "border-[#4CAF50]", icon: <Building2 className="h-10 w-10" /> },
+  { name: "GreenGather AI", path: "/greengather", color: "border-[#8BC34A]", icon: <TreePine className="h-10 w-10" /> },
+  { name: "Repack AI", path: "/repack-ai", color: "border-[#CDDC39]", icon: <PackageCheck className="h-10 w-10" /> },
+  { name: "CarbonKarma AI", path: "/carbon-karma", color: "border-[#FFEB3B]", icon: <CloudCheck className="h-10 w-10" /> },
+  { name: "EcoChain Trace", path: "/ecochain-ai", color: "border-[#FFC107]", icon: <ScanBarcode className="h-10 w-10" /> }
+];
+
 
 const HeroSection = () => {
 
@@ -79,6 +90,7 @@ const HeroSection = () => {
             </div>
           </div>
       </div>
+      
       <div className="relative w-full bg-gray-100 py-6 px-4">
       <Swiper
         spaceBetween={16}
@@ -111,6 +123,8 @@ const HeroSection = () => {
         ))}
       </Swiper>
 
+
+
       {/* Green Right-Side Navigation */}
       <div className="mt-5 flex z-20 justify-center">
         <button
@@ -127,6 +141,18 @@ const HeroSection = () => {
         </button>
       </div>
     </div>
+    <div className="bg-gray-100 text-center text-5xl font-bold p-6 text-[#2C343F]"> Our Five AI Technologies Backing <span className="text-green-400">GreenX</span></div>
+       <div className="flex justify-center gap-6 bg-gray-100 z-50">
+                                    {sustainableApps.map((app) => (
+                                        <Link
+                                            key={app.name}
+                                            to={app.path}
+                                            className="block px-4 py-2 text-gray-700"
+                                        >
+                                            <div className={`flex flex-col items-center text-xl font-bold justify-center rounded-4xl border-4 hover:shadow-2xl transition-all duration-300 ${app.color} h-60 w-60 text-center my-6 gap-4  hover:bg-green-50 hover:text-green-700`}>{app.icon}{app.name}</div>
+                                        </Link>
+                                    ))}
+                                </div>
     </section>
   );
 };

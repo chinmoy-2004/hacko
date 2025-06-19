@@ -1,4 +1,4 @@
-#!C:\Users\chinm\OneDrive\Desktop\teylnyx\HackOn-Amazon\Backend\venv\Scripts\python.exe
+#!C:\Users\chinm\OneDrive\Desktop\teylnyx\HackOn-Amazon\backend\venv\Scripts\python.exe
 
 import sys
 import json

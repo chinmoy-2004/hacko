@@ -13,8 +13,8 @@ const products = [
       { name: "100% Organic", icon: "🌿" },
       { name: "Recyclable", icon: "♻️" },
     ],
-    price: 29.99,
-    originalPrice: 39.99,
+    price: 2489.17,
+    originalPrice: 3319.17,
   },
   {
     id: "p2",
@@ -30,7 +30,7 @@ const products = [
       { name: "100% Organic", icon: "🌿" },
       { name: "GreenCircle Certified", icon: "🔵" },
     ],
-    price: 14.99,
+    price: 1243.17,
   },
   {
     id: "p3",
@@ -46,8 +46,8 @@ const products = [
       { name: "Green Business Certified", icon: "📄" },
       { name: "Recyclable", icon: "♻️" },
     ],
-    price: 34.99,
-    originalPrice: 44.99,
+    price: 2904.17,
+    originalPrice: 3734.17,
   },
   {
     id: "p4",
@@ -63,7 +63,7 @@ const products = [
       { name: "100% Organic", icon: "🌿" },
       { name: "Recyclable", icon: "♻️" },
     ],
-    price: 12.99,
+    price: 1078.17,
   },
   {
     id: "p5",
@@ -79,8 +79,8 @@ const products = [
       { name: "BPA Free", icon: "🚫" },
       { name: "Recyclable", icon: "♻️" },
     ],
-    price: 9.99,
-    originalPrice: 10.99,
+    price: 829.17,
+    originalPrice: 912.17,
   },
   {
     id: "p6",
@@ -96,7 +96,7 @@ const products = [
       { name: "100% Organic", icon: "🌿" },
       { name: "Compostable", icon: "🌱" },
     ],
-    price: 7.99,
+    price: 663.17,
   },
   {
     id: "p7",
@@ -112,8 +112,8 @@ const products = [
       { name: "FSC Certified", icon: "📄" },
       { name: "Recyclable", icon: "♻️" },
     ],
-    price: 5.49,
-    originalPrice: 6.49,
+    price: 455.67,
+    originalPrice: 538.67,
   },
   {
     id: "p8",
@@ -129,7 +129,7 @@ const products = [
       { name: "EcoLabel Certified", icon: "🧼" },
       { name: "Biodegradable", icon: "🌎" },
     ],
-    price: 19.99,
+    price: 1658.17,
   },
 ];
 

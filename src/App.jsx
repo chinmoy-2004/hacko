@@ -15,6 +15,10 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ApplyCertificate from './pages/Applyfoecertecochain.jsx';
 import { Toaster } from 'react-hot-toast';
+import Impact from './pages/Impact.jsx';
+import CheckoutPage from './pages/CheckoutPage.jsx';
+import Orders from './pages/Orders.jsx';
+import Education from './pages/Education.jsx';
 import useEcosense from './store/ecosense.store.js';
 import RestrictsellerModal from './components/Restrictunverifedseller.jsx';
 import SellerDashboard from './pages/Sellerdashboard.jsx';
@@ -42,6 +46,10 @@ const App = () => {
         <Route path="/applyforcertification" element={issellerverify? <ApplyCertificate/> : <RestrictsellerModal/>}/>
         <Route path="/Sellerdashboard" element={issellerverify? <SellerDashboard/>:<RestrictsellerModal/>}/>
         <Route path="/addproduct" element={isproductverified? <AddProduct/>:<ApplyCertificate/>}/>
+        <Route path="/impact" element={<Impact/>}/>
+        <Route path="/check-out" element={<CheckoutPage/>}/>
+        <Route path="/orders" element={<Orders/>}/>
+        <Route path="/edu" element={<Education/>}/>
       </Routes>
       <Footer/>
       <ToastContainer/>

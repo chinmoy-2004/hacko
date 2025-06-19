@@ -3,7 +3,10 @@ import React, { createContext, useContext, useReducer, useEffect } from "react";
 const CartContext = createContext();
 
 const initialState = {
-  cart: JSON.parse(localStorage.getItem("cart")) || []
+  cart: JSON.parse(localStorage.getItem("cart")) || [],
+  ecoDiscountEnabled: false,
+  useGreenCoins: false,
+  carbonOffset: false
 };
 
 function cartReducer(state, action) {
@@ -51,7 +54,23 @@ function cartReducer(state, action) {
   );
   return { cart: updatedCart };
 }
+case "TOGGLE_ECO_DISCOUNT":
+      return {
+        ...state,
+        ecoDiscountEnabled: action.payload,
+      };
 
+    case "TOGGLE_GREEN_COINS":
+      return {
+        ...state,
+        useGreenCoins: action.payload,
+      };
+
+    case "TOGGLE_CARBON_OFFSET":
+      return {
+        ...state,
+        carbonOffset: action.payload,
+      };
 
     default:
       return state;
@@ -65,8 +84,38 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem("cart", JSON.stringify(state.cart));
   }, [state.cart]);
 
+
+  const subtotal = state.cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const discount = state.ecoDiscountEnabled ? subtotal * 0.1 : 0;
+  const shippingBase = 49;
+  const shippingFee = state.useGreenCoins ? 0 : shippingBase;
+  const carbonOffsetFee = state.carbonOffset ? 20 : 0;
+  const total = subtotal - discount + shippingFee + carbonOffsetFee;
+
+  // Toggle functions
+  const toggleEcoDiscount = (value) => dispatch({ type: "TOGGLE_ECO_DISCOUNT", payload: value });
+  const toggleGreenCoins = (value) => dispatch({ type: "TOGGLE_GREEN_COINS", payload: value });
+  const toggleCarbonOffset = (value) => dispatch({ type: "TOGGLE_CARBON_OFFSET", payload: value });
+
   return (
-    <CartContext.Provider value={{ cart: state.cart, dispatch }}>
+    <CartContext.Provider
+      value={{
+        cart: state.cart,
+        ecoDiscountEnabled: state.ecoDiscountEnabled,
+        useGreenCoins: state.useGreenCoins,
+        carbonOffset: state.carbonOffset,
+        subtotal,
+        discount,
+        shippingBase,
+        shippingFee,
+        carbonOffsetFee,
+        total,
+        toggleEcoDiscount,
+        toggleGreenCoins,
+        toggleCarbonOffset,
+        dispatch, // for other actions if needed
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
