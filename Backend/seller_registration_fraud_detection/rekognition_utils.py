@@ -1,3 +1,5 @@
+
+
 import boto3
 import os
 from dotenv import load_dotenv
@@ -8,7 +10,7 @@ rekognition = boto3.client(
     'rekognition',
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID_GENERAL"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY_GENERAL"),
-    region_name='us-east-1'
+    region_name='ap-south-1' # UPDATED: Changed from us-east-1 to match other services
 )
 
 def compare_faces(bucket, source_key, target_key, threshold=90):

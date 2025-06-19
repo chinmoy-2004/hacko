@@ -1,13 +1,17 @@
-import { useState, useEffect,useRef } from 'react';
+
+
+import { useState, useEffect, useRef } from 'react';
 import {
   ChevronDown, MapPin, Upload, Building2, Camera, Link, Brain,
   RefreshCw, CheckCircle, AlertCircle, Clock, Hash, Shield,
-  Lock, Eye, Settings, Database, UserCheck, Copy, ExternalLink
+  Lock, Eye, Settings, Database, UserCheck, Copy, ExternalLink,
+  Loader2
 } from 'lucide-react';
+import useEcosense from '../store/ecosense.store.js';
 
 // UI Components with semantic design tokens
 const Card = ({ className = "", children, ...props }) => (
-  <div className={`rounded-lg border border-[hsl(var(--card-border))] bg-[hsl(var(--card-bg))] text-[hsl(var(--text-primary))] shadow-[var(--card-shadow)] ${className}`} {...props}>
+  <div className={`rounded-lg border border-[hsl(var(--card-border))] bg-[hsl(var(--card-bg))] text-[hsl(var(--text-primary))] shadow-[var(--card-shadow))] ${className}`} {...props}>
     {children}
   </div>
 );
@@ -129,7 +133,7 @@ const useToast = () => {
 const AllInOneVerification = () => {
   const [isOpenmodal, setIsOpenmodal] = useState(false);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(true);
-  const [formData, setFormData] = useState({
+  const [formdata, setFormData] = useState({
     businessName: '',
     gstin: '',
     pan: '',
@@ -141,6 +145,10 @@ const AllInOneVerification = () => {
     phone: '',
     email: ''
   });
+  const [docImage, setDocImage] = useState(null);
+  const [selfieImage, setSelfieImage] = useState(null);
+  const [verificationResult, setVerificationResult] = useState(null);
+  const [fraudDetails, setFraudDetails] = useState(null);
 
   const [verificationSteps, setVerificationSteps] = useState([
     {
@@ -188,12 +196,70 @@ const AllInOneVerification = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
-    toast({
-      title: "Registration Submitted",
-      description: "Your shop registration has been submitted for verification.",
-    });
-    setIsOpenmodal(true);
+  const { sellerVerification, isverificationprocessing } = useEcosense();
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!docImage || !selfieImage) {
+      toast({
+        title: "Error",
+        description: "Please upload both document and selfie images",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', formdata.businessName);
+    formData.append('pan', formdata.pan);
+    formData.append('gst', formdata.gstin);
+    formData.append('doc_image', docImage);
+    formData.append('selfie_image', selfieImage);
+
+    try {
+
+      const response = await sellerVerification(formData);
+      setVerificationResult(response.data);
+
+      if (response.data.status === 'fraud') {
+        setFraudDetails(response.data);
+        setIsOpenmodal(true);
+
+        // Update verification steps to show failure
+        setVerificationSteps(prev => prev.map(step => ({
+          ...step,
+          status: 'failed',
+          progress: 100,
+          timestamp: new Date().toLocaleTimeString()
+        })));
+      } else {
+        setIsOpenmodal(true);
+        if (response.data.status === 'success') {
+          runVerification();
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Verification failed. Please try again.",
+      });
+    }
+  };
+
+  const handleFileChange = (type, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (type === 'document') {
+        setDocImage(file);
+      } else {
+        setSelfieImage(file);
+      }
+    }
+  };
+
+  const handleFileClick = (ref, type) => {
+    ref.current?.click();
   };
 
   const getStatusIcon = (status) => {
@@ -332,21 +398,8 @@ const AllInOneVerification = () => {
     }
   };
 
-
   const shopImageInputRef = useRef(null);
   const licenseDocInputRef = useRef(null);
-
-  const handleFileClick = (ref) => {
-    ref.current?.click();
-  };
-
-  const handleFileChange = (label, e) => {
-    const files = e.target.files;
-    if (files.length > 0) {
-      console.log(`${label} selected:`, files);
-    }
-  };
-
 
   return (
     <div className="space-y-8">
@@ -388,7 +441,7 @@ const AllInOneVerification = () => {
                 <Label htmlFor="businessName">Business Name</Label>
                 <Input
                   id="businessName"
-                  value={formData.businessName}
+                  value={formdata.businessName}
                   onChange={(e) => handleInputChange('businessName', e.target.value)}
                   placeholder="Enter your business name"
                 />
@@ -398,7 +451,7 @@ const AllInOneVerification = () => {
                 <Label htmlFor="gstin">🧾 GST Number</Label>
                 <Input
                   id="gstin"
-                  value={formData.gstin}
+                  value={formdata.gstin}
                   onChange={(e) => handleInputChange('gstin', e.target.value)}
                   placeholder="Enter GST number"
                 />
@@ -408,7 +461,7 @@ const AllInOneVerification = () => {
                 <Label htmlFor="pan">PAN Number</Label>
                 <Input
                   id="pan"
-                  value={formData.pan}
+                  value={formdata.pan}
                   onChange={(e) => handleInputChange('pan', e.target.value)}
                   placeholder="Enter PAN number"
                 />
@@ -418,7 +471,7 @@ const AllInOneVerification = () => {
                 <Label htmlFor="aadhaar">Aadhaar Number</Label>
                 <Input
                   id="aadhaar"
-                  value={formData.aadhaar}
+                  value={formdata.aadhaar}
                   onChange={(e) => handleInputChange('aadhaar', e.target.value)}
                   placeholder="Enter Aadhaar number"
                 />
@@ -428,7 +481,7 @@ const AllInOneVerification = () => {
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
-                  value={formData.phone}
+                  value={formdata.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   placeholder="Enter phone number"
                 />
@@ -439,7 +492,7 @@ const AllInOneVerification = () => {
                 <Input
                   id="email"
                   type="email"
-                  value={formData.email}
+                  value={formdata.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="Enter email address"
                 />
@@ -452,7 +505,7 @@ const AllInOneVerification = () => {
                 <Label htmlFor="address">Business Address</Label>
                 <Input
                   id="address"
-                  value={formData.address}
+                  value={formdata.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
                   placeholder="Enter complete address"
                 />
@@ -463,7 +516,7 @@ const AllInOneVerification = () => {
                   <Label htmlFor="city">City</Label>
                   <Input
                     id="city"
-                    value={formData.city}
+                    value={formdata.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
                     placeholder="City"
                   />
@@ -472,7 +525,7 @@ const AllInOneVerification = () => {
                   <Label htmlFor="state">State</Label>
                   <Input
                     id="state"
-                    value={formData.state}
+                    value={formdata.state}
                     onChange={(e) => handleInputChange('state', e.target.value)}
                     placeholder="State"
                   />
@@ -481,7 +534,7 @@ const AllInOneVerification = () => {
                   <Label htmlFor="pincode">PIN Code</Label>
                   <Input
                     id="pincode"
-                    value={formData.pincode}
+                    value={formdata.pincode}
                     onChange={(e) => handleInputChange('pincode', e.target.value)}
                     placeholder="PIN Code"
                   />
@@ -490,517 +543,546 @@ const AllInOneVerification = () => {
             </div>
 
             {/* File Uploads */}
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center space-x-2">
-                <Upload className="h-5 w-5 text-[hsl(var(--eco-green))]" />
-                <span>📤 Upload Documents</span>
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 border-2 border-dashed border-[hsl(var(--text-secondary))]/25 rounded-lg text-center">
-                  <Upload className="h-8 w-8 mx-auto mb-2 text-[hsl(var(--text-secondary))]" />
-                  <p className="text-sm text-[hsl(var(--text-secondary))]">Shop Images</p>
-                  <Button variant="outline" size="sm" className="mt-2 cursor-pointer" onClick={() => handleFileClick(shopImageInputRef)}>
-                    Choose Files
-                  </Button>
-                  <input
-                    type="file"
-                    ref={shopImageInputRef}
-                    onChange={(e) => handleFileChange("Shop Images", e)}
-                    className="hidden"
-                    accept=".png,.jpg,.jpeg"
-                    multiple
-                  />
-                </div>
-
-                <div className="p-4 border-2 border-dashed border-[hsl(var(--text-secondary))]/25 rounded-lg text-center">
-                  <Upload className="h-8 w-8 mx-auto mb-2 text-[hsl(var(--text-secondary))]" />
-                  <p className="text-sm text-[hsl(var(--text-secondary))]">License Documents</p>
-                  <Button variant="outline" size="sm" className="mt-2 cursor-pointer"  onClick={() => handleFileClick(licenseDocInputRef)}>
-                    Choose Files
-                  </Button>
-                   <input
-                    type="file"
-                    ref={licenseDocInputRef}
-                    onChange={(e) => handleFileChange("Shop license", e)}
-                    className="hidden"
-                    accept=".png,.jpg,.jpeg"
-                    multiple
-                  />
-                </div>
-              </div>
+            <div className="p-4 border-2 border-dashed border-[hsl(var(--text-secondary))]/25 rounded-lg text-center">
+              <Upload className="h-8 w-8 mx-auto mb-2 text-[hsl(var(--text-secondary))]" />
+              <p className="text-sm text-[hsl(var(--text-secondary))]">
+                {docImage ? `Document: ${docImage.name}` : "Upload a government ID"}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 cursor-pointer"
+                onClick={() => handleFileClick(shopImageInputRef, 'document')}
+              >
+                {docImage ? 'Change File' : 'Choose File'}
+              </Button>
+              <input
+                type="file"
+                ref={shopImageInputRef}
+                onChange={(e) => handleFileChange('document', e)}
+                className="hidden"
+                accept=".png,.jpg,.jpeg"
+              />
             </div>
 
-            <Button
+            <div className="p-4 border-2 border-dashed border-[hsl(var(--text-secondary))]/25 rounded-lg text-center">
+              <Upload className="h-8 w-8 mx-auto mb-2 text-[hsl(var(--text-secondary))]" />
+              <p className="text-sm text-[hsl(var(--text-secondary))]">
+                {selfieImage ? `Selfie: ${selfieImage.name}` : "Upload a selfie image"}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 cursor-pointer"
+                onClick={() => handleFileClick(licenseDocInputRef, 'selfie')}
+              >
+                {selfieImage ? 'Change File' : 'Choose File'}
+              </Button>
+              <input
+                type="file"
+                ref={licenseDocInputRef}
+                onChange={(e) => handleFileChange('selfie', e)}
+                className="hidden"
+                accept=".png,.jpg,.jpeg"
+              />
+            </div>
+
+            <button
               onClick={handleSubmit}
-              className="w-full bg-[hsl(var(--eco-green))] cursor-pointer hover:bg-[hsl(var(--eco-green))]/90 text-[hsl(var(--primary-foreground))]"
-              size="lg"
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 cursor-pointer transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              disabled={isverificationprocessing}
             >
-              🔍 Submit for Verification
-            </Button>
+              {isverificationprocessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : 'Submit for Web3 Audit'}
+            </button>
           </CardContent>
         )}
       </Card>
-  
-       {/* AI Verification  */}
-    {isOpenmodal && (   
-      <Card className="w-full">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-[hsl(var(--verification-blue))]/10 rounded-lg">
-                <Brain className="h-6 w-6 text-[hsl(var(--verification-blue))]" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">✅ AI Verification + API Layer</CardTitle>
-                <CardDescription>Real-time verification pipeline with AI-powered validation</CardDescription>
-              </div>
-            </div>
-            <Button onClick={runVerification} className="bg-[hsl(var(--verification-blue))] hover:bg-[hsl(var(--verification-blue))]/90 text-[hsl(var(--primary-foreground))]">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Re-run Verification
-            </Button>
-          </div>
-        </CardHeader>
 
-        <CardContent>
-          <div className="space-y-6">
-            {/* Breadcrumb Pipeline */}
-            <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-              {verificationSteps.map((step, index) => (
-                <div key={step.id} className="flex items-center space-x-2 flex-shrink-0">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getStatusColor(step.status)}`}>
-                    {getStatusIcon(step.status)}
-                  </div>
-                  {index < verificationSteps.length - 1 && (
-                    <div className="w-8 h-0.5 bg-[hsl(var(--button-secondary))]"></div>
-                  )}
-                </div>
-              ))}
-            </div>
+      {/* Fraud Alert */}
+      {isOpenmodal && fraudDetails && (
+        <div className="w-full">
+          <Card className="border-[hsl(var(--badge-error))] bg-[hsl(var(--badge-error))]/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="flex items-center space-x-3">
+                <AlertCircle className="h-6 w-6 text-[hsl(var(--badge-error))]" />
+                <CardTitle className="text-lg text-[hsl(var(--badge-error))]">
+                  Fraud Detected
+                </CardTitle>
+              </div>
+              <Badge variant="error">High Risk</Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm">
+                  {fraudDetails.message || "Potential fraud detected during verification"}
+                </p>
 
-            {/* Detailed Steps */}
-            <div className="space-y-4">
-              {verificationSteps.map((step) => (
-                <div key={step.id} className="p-4 border border-[hsl(var(--card-border))] rounded-lg space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      {getStatusIcon(step.status)}
-                      <div>
-                        <h3 className="font-semibold">{step.title}</h3>
-                        <p className="text-sm text-[hsl(var(--text-secondary))]">{step.details}</p>
-                      </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-3 bg-[hsl(var(--card-bg))] rounded-lg border border-[hsl(var(--card-border))]">
+                    <h4 className="font-semibold text-sm mb-2">Document Selfie Match</h4>
+                    <div className="space-y-1">
+                      <p className="text-sm">
+                        Match: <Badge variant={fraudDetails.verification_details.document_selfie_match.match ? 'success' : 'error'}>
+                          {fraudDetails.verification_details.document_selfie_match.match ? 'Matched' : 'Not Matched'}
+                        </Badge>
+                      </p>
+                      <p className="text-sm">
+                        Confidence: {fraudDetails.verification_details.document_selfie_match.confidence}%
+                      </p>
+                      <p className="text-sm">
+                        Similarity: {fraudDetails.verification_details.document_selfie_match.similarity}%
+                      </p>
                     </div>
-                    <Badge variant={step.status === 'completed' ? 'success' : 'secondary'}>
-                      {step.status}
-                    </Badge>
                   </div>
 
-                  {step.status === 'processing' && (
-                    <Progress value={step.progress} className="w-full" />
-                  )}
-
-                  {step.status === 'completed' && step.id === 'brand' && (
-                    <div className="mt-3 p-3 bg-[hsl(var(--button-secondary))] rounded-lg">
-                      <h4 className="font-semibold text-sm mb-2">Brand Detection Results:</h4>
-                      <div className="space-y-1">
-                        <Badge variant="success">Verified Brand: Nike</Badge>
-                        <Badge variant="outline">Image Authenticity: 94%</Badge>
-                        <Badge variant="outline">Brand Match Confidence: 98%</Badge>
-                      </div>
+                  <div className="p-3 bg-[hsl(var(--card-bg))] rounded-lg border border-[hsl(var(--card-border))]">
+                    <h4 className="font-semibold text-sm mb-2">Duplicate Detection</h4>
+                    <div className="space-y-1">
+                      <p className="text-sm">
+                        Duplicate Face: <Badge variant={fraudDetails.verification_details.duplicate_face_found ? 'error' : 'success'}>
+                          {fraudDetails.verification_details.duplicate_face_found ? 'Found' : 'Not Found'}
+                        </Badge>
+                      </p>
+                      <p className="text-sm">
+                        Duplicate Data: <Badge variant={fraudDetails.verification_details.duplicate_data_found ? 'error' : 'success'}>
+                          {fraudDetails.verification_details.duplicate_data_found ? 'Found' : 'Not Found'}
+                        </Badge>
+                      </p>
                     </div>
-                  )}
-
-                  {step.status === 'completed' && step.id === 'api' && (
-                    <div className="mt-3 p-3 bg-[hsl(var(--button-secondary))] rounded-lg">
-                      <h4 className="font-semibold text-sm mb-2">API Validation Results:</h4>
-                      <div className="space-y-1">
-                        <Badge variant="success">UIDAI: Verified</Badge>
-                        <Badge variant="success">NSDL: Validated</Badge>
-                        <Badge variant="outline">Response Time: 1.2s</Badge>
-                      </div>
-                    </div>
-                  )}
-
-                  {step.timestamp && (
-                    <p className="text-xs text-[hsl(var(--text-secondary))]">
-                      Last updated: {step.timestamp}
-                    </p>
-                  )}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>)}
 
+                <div className="pt-2">
+                  <Button
+                    variant="outline"
+                    className="w-full border-[hsl(var(--badge-error))] text-[hsl(var(--badge-error))] hover:bg-[hsl(var(--badge-error))]/10"
+                    onClick={() => {
+                      toast({
+                        title: "Appeal Submitted",
+                        description: "Your fraud appeal has been submitted for review",
+                      });
+                    }}
+                  >
+                    Appeal This Decision
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       {/* Seller ID Generator */}
-      {isOpenmodal && (
-      <Card className="w-full">
-        <CardHeader>
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-[hsl(var(--success-green))]/10 rounded-lg">
-              <Hash className="h-6 w-6 text-[hsl(var(--success-green))]" />
-            </div>
-            <div>
-              <CardTitle className="text-xl">🆔 Seller Unique ID Generator</CardTitle>
-              <CardDescription>Your verified seller identification and blockchain certificate</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {/* Seller ID Display */}
-          <div className="p-6 bg-gradient-to-r from-[hsl(var(--eco-green))]/10 to-[hsl(var(--verification-blue))]/10 rounded-lg border border-[hsl(var(--card-border))]">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-lg flex items-center space-x-2">
-                  <span>🚀</span>
-                  <span>Your Seller Unique ID</span>
-                </h3>
-                <Button
-                  onClick={generateNewId}
-                  disabled={isGenerating}
-                  variant="outline"
-                  size="sm"
-                >
-                  {isGenerating ? 'Generating...' : 'Regenerate'}
-                </Button>
+      {isOpenmodal && !fraudDetails && (
+        <Card className="w-full">
+          <CardHeader>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[hsl(var(--success-green))]/10 rounded-lg">
+                <Hash className="h-6 w-6 text-[hsl(var(--success-green))]" />
               </div>
+              <div>
+                <CardTitle className="text-xl">🆔 Seller Unique ID Generator</CardTitle>
+                <CardDescription>Your verified seller identification and blockchain certificate</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
 
-              <div className="bg-[hsl(var(--card-bg))] p-4 rounded-lg border border-[hsl(var(--card-border))]">
+          <CardContent className="space-y-6">
+            {/* Seller ID Display */}
+            <div className="p-6 bg-gradient-to-r from-[hsl(var(--eco-green))]/10 to-[hsl(var(--verification-blue))]/10 rounded-lg border border-[hsl(var(--card-border))]">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <code className="text-xl font-mono bg-[hsl(var(--button-secondary))] px-3 py-2 rounded">
-                    {sellerId}
-                  </code>
+                  <h3 className="font-semibold text-lg flex items-center space-x-2">
+                    <span>🚀</span>
+                    <span>Your Seller Unique ID</span>
+                  </h3>
                   <Button
-                    onClick={() => copyToClipboard(sellerId, 'Seller ID')}
+                    onClick={generateNewId}
+                    disabled={isGenerating}
                     variant="outline"
                     size="sm"
                   >
-                    <Copy className="h-4 w-4" />
+                    {isGenerating ? 'Generating...' : 'Regenerate'}
                   </Button>
                 </div>
-              </div>
 
-              {isGenerating && (
+                <div className="bg-[hsl(var(--card-bg))] p-4 rounded-lg border border-[hsl(var(--card-border))]">
+                  <div className="flex items-center justify-between">
+                    <code className="text-xl font-mono bg-[hsl(var(--button-secondary))] px-3 py-2 rounded">
+                      {sellerId}
+                    </code>
+                    <Button
+                      onClick={() => copyToClipboard(sellerId, 'Seller ID')}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {isGenerating && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-[hsl(var(--text-secondary))]">Generating unique identifier...</p>
+                    <Progress value={67} className="w-full" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Blockchain Status */}
+            <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg space-y-4">
+              <h3 className="font-semibold flex items-center space-x-2">
+                <Link className="h-5 w-5 text-[hsl(var(--verification-blue))]" />
+                <span>🔁 Blockchain Hash Status</span>
+              </h3>
+
+              <div className="space-y-3">
+                <div className="bg-[hsl(var(--button-secondary))] p-3 rounded-lg">
+                  <p className="text-sm text-[hsl(var(--text-secondary))] mb-2">Blockchain Hash:</p>
+                  <div className="flex items-center justify-between">
+                    <code className="text-xs font-mono bg-[hsl(var(--card-bg))] px-2 py-1 rounded break-all">
+                      {blockchainHash.substring(0, 40)}...
+                    </code>
+                    <Button
+                      onClick={() => copyToClipboard(blockchainHash, 'Blockchain Hash')}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Badge variant="success">Confirmed</Badge>
+                  <Badge variant="outline">Block: #9,847,523</Badge>
+                  <Badge variant="outline">Gas Used: 21,000</Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Trust Level */}
+            <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg space-y-4">
+              <h3 className="font-semibold flex items-center space-x-2">
+                <Shield className="h-5 w-5 text-[hsl(var(--success-green))]" />
+                <span>🔒 Trust Level Assessment</span>
+              </h3>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[hsl(var(--text-secondary))]">Current Trust Level:</span>
+                  <Badge className={getTrustLevelColor(trustLevel)}>
+                    {trustLevel}
+                  </Badge>
+                </div>
+
                 <div className="space-y-2">
-                  <p className="text-sm text-[hsl(var(--text-secondary))]">Generating unique identifier...</p>
-                  <Progress value={67} className="w-full" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Trust Score</span>
+                    <span className="text-sm font-semibold">{getTrustScore(trustLevel)}/100</span>
+                  </div>
+                  <Progress value={getTrustScore(trustLevel)} className="w-full" />
                 </div>
-              )}
-            </div>
-          </div>
 
-          {/* Blockchain Status */}
-          <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg space-y-4">
-            <h3 className="font-semibold flex items-center space-x-2">
-              <Link className="h-5 w-5 text-[hsl(var(--verification-blue))]" />
-              <span>🔁 Blockchain Hash Status</span>
-            </h3>
-
-            <div className="space-y-3">
-              <div className="bg-[hsl(var(--button-secondary))] p-3 rounded-lg">
-                <p className="text-sm text-[hsl(var(--text-secondary))] mb-2">Blockchain Hash:</p>
-                <div className="flex items-center justify-between">
-                  <code className="text-xs font-mono bg-[hsl(var(--card-bg))] px-2 py-1 rounded break-all">
-                    {blockchainHash.substring(0, 40)}...
-                  </code>
-                  <Button
-                    onClick={() => copyToClipboard(blockchainHash, 'Blockchain Hash')}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                <div className="text-sm text-[hsl(var(--text-secondary))] space-y-1">
+                  <p>• Based on verification history</p>
+                  <p>• Document authenticity score</p>
+                  <p>• API validation results</p>
+                  <p>• Blockchain transaction integrity</p>
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Badge variant="success">Confirmed</Badge>
-                <Badge variant="outline">Block: #9,847,523</Badge>
-                <Badge variant="outline">Gas Used: 21,000</Badge>
-              </div>
-            </div>
-          </div>
-
-          {/* Trust Level */}
-          <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg space-y-4">
-            <h3 className="font-semibold flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-[hsl(var(--success-green))]" />
-              <span>🔒 Trust Level Assessment</span>
-            </h3>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[hsl(var(--text-secondary))]">Current Trust Level:</span>
-                <Badge className={getTrustLevelColor(trustLevel)}>
-                  {trustLevel}
-                </Badge>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Trust Score</span>
-                  <span className="text-sm font-semibold">{getTrustScore(trustLevel)}/100</span>
-                </div>
-                <Progress value={getTrustScore(trustLevel)} className="w-full" />
-              </div>
-
-              <div className="text-sm text-[hsl(var(--text-secondary))] space-y-1">
-                <p>• Based on verification history</p>
-                <p>• Document authenticity score</p>
-                <p>• API validation results</p>
-                <p>• Blockchain transaction integrity</p>
-              </div>
-            </div>
-          </div>
-
-          <Button
-            className="w-full bg-[hsl(var(--eco-green))] hover:bg-[hsl(var(--eco-green))]/90 text-[hsl(var(--primary-foreground))]"
-            size="lg"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Link to EcoChain Trace
-          </Button>
-        </CardContent>
-      </Card>)}
-
-      {/* Security Panel */}
-      {isOpenmodal && (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* AI Fraud Detection */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-[hsl(var(--warning-orange))]/10 rounded-lg">
-                <Eye className="h-6 w-6 text-[hsl(var(--warning-orange))]" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">AI Fraud Detection Tools</CardTitle>
-                <CardDescription>Advanced AI-powered security monitoring</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">Powered by AWS Rekognition</h3>
-                <Badge variant="warning">Active</Badge>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Real-time Analysis</span>
-                  <span className="text-sm font-semibold">✓ Enabled</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Face Detection</span>
-                  <span className="text-sm font-semibold">✓ Active</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Object Recognition</span>
-                  <span className="text-sm font-semibold">✓ Running</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">Cross-matches Image DNA</h3>
-                <Badge variant="outline">Scanning</Badge>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Database Entries</span>
-                  <span className="text-sm font-semibold">2.3M Images</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Match Speed</span>
-                  <span className="text-sm font-semibold">&lt; 0.5s</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 bg-[hsl(var(--success-green))]/10 rounded-lg">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">Image Authenticity Assessment</h3>
-                <Badge variant="success">94%</Badge>
-              </div>
-              <Progress value={94} className="w-full mb-2" />
-              <div className="text-sm text-[hsl(var(--text-secondary))] space-y-1">
-                <p>• Metadata integrity: ✓ Verified</p>
-                <p>• Pixel-level analysis: ✓ Authentic</p>
-                <p>• Manipulation detection: ✗ None found</p>
-                <p>• Timestamp validation: ✓ Consistent</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Data Security */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-[hsl(var(--verification-blue))]/10 rounded-lg">
-                <Lock className="h-6 w-6 text-[hsl(var(--verification-blue))]" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">Data Security Overview</CardTitle>
-                <CardDescription>Enterprise-grade security and compliance</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-[hsl(var(--verification-blue))]" />
-                  <span>🔐 AES-256 Encryption</span>
-                </h3>
-                <Badge variant="info">Enabled</Badge>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Data at Rest</span>
-                  <span className="text-sm font-semibold">✓ Encrypted</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Data in Transit</span>
-                  <span className="text-sm font-semibold">✓ TLS 1.3</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Key Management</span>
-                  <span className="text-sm font-semibold">✓ HSM Protected</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold flex items-center space-x-2">
-                  <UserCheck className="h-5 w-5 text-[hsl(var(--verification-blue))]" />
-                  <span>🔐 Role-Based Access Control</span>
-                </h3>
-                <Badge variant="outline">Active</Badge>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Admin Users</span>
-                  <span className="text-sm font-semibold">3 Active</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Verifier Agents</span>
-                  <span className="text-sm font-semibold">12 Online</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">System Access</span>
-                  <span className="text-sm font-semibold">Restricted</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 bg-[hsl(var(--verification-blue))]/10 rounded-lg">
-              <h3 className="font-semibold mb-3">Compliance Standards</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <Badge variant="outline">ISO 27001</Badge>
-                <Badge variant="outline">SOC 2 Type II</Badge>
-                <Badge variant="outline">GDPR</Badge>
-                <Badge variant="outline">PCI DSS</Badge>
               </div>
             </div>
 
             <Button
-              className="w-full bg-[hsl(var(--verification-blue))] hover:bg-[hsl(var(--verification-blue))]/90 text-[hsl(var(--primary-foreground))]"
+              className="w-full bg-[hsl(var(--eco-green))] hover:bg-[hsl(var(--eco-green))]/90 text-[hsl(var(--primary-foreground))]"
               size="lg"
             >
-              <Settings className="h-4 w-4 mr-2" />
-              Manage Data Permissions
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Link to EcoChain Trace
             </Button>
           </CardContent>
         </Card>
-      </div>)}
+      )}
+
+      {/* Security Panel */}
+      {isOpenmodal && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* AI Fraud Detection */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-[hsl(var(--warning-orange))]/10 rounded-lg">
+                  <Eye className="h-6 w-6 text-[hsl(var(--warning-orange))]" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">AI Fraud Detection Tools</CardTitle>
+                  <CardDescription>Advanced AI-powered security monitoring</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">Powered by AWS Rekognition</h3>
+                  <Badge variant={fraudDetails ? "error" : "warning"}>
+                    {fraudDetails ? "Alert" : "Active"}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">Real-time Analysis</span>
+                    <span className="text-sm font-semibold">✓ Enabled</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">Face Detection</span>
+                    <span className="text-sm font-semibold">
+                      {fraudDetails ? "✗ Failed" : "✓ Active"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">Object Recognition</span>
+                    <span className="text-sm font-semibold">✓ Running</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">Cross-matches Image DNA</h3>
+                  <Badge variant={fraudDetails ? "error" : "outline"}>
+                    {fraudDetails ? "Alert" : "Scanning"}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">Database Entries</span>
+                    <span className="text-sm font-semibold">2.3M Images</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">Match Speed</span>
+                    <span className="text-sm font-semibold">&lt; 0.5s</span>
+                  </div>
+                  {fraudDetails?.verification_details.duplicate_face_found && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[hsl(var(--badge-error-text))]">Duplicate Found</span>
+                      <span className="text-sm font-semibold text-[hsl(var(--badge-error-text))]">✗ High Risk</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className={`p-4 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/10" : "bg-[hsl(var(--success-green))]/10"} rounded-lg`}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">Image Authenticity Assessment</h3>
+                  <Badge variant={fraudDetails ? "error" : "success"}>
+                    {fraudDetails ? "Failed" : "94%"}
+                  </Badge>
+                </div>
+                <Progress
+                  value={fraudDetails ? 32 : 94}
+                  className={`w-full mb-2 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : ""}`}
+                />
+                <div className="text-sm text-[hsl(var(--text-secondary))] space-y-1">
+                  {fraudDetails ? (
+                    <>
+                      <p className="text-[hsl(var(--badge-error-text))]">• Metadata integrity: ✗ Suspicious</p>
+                      <p className="text-[hsl(var(--badge-error-text))]">• Pixel-level analysis: ✗ Manipulated</p>
+                      <p className="text-[hsl(var(--badge-error-text))]">• Manipulation detection: ✓ Found</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>• Metadata integrity: ✓ Verified</p>
+                      <p>• Pixel-level analysis: ✓ Authentic</p>
+                      <p>• Manipulation detection: ✗ None found</p>
+                      <p>• Timestamp validation: ✓ Consistent</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Data Security */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-[hsl(var(--verification-blue))]/10 rounded-lg">
+                  <Lock className="h-6 w-6 text-[hsl(var(--verification-blue))]" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Data Security Overview</CardTitle>
+                  <CardDescription>Enterprise-grade security and compliance</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold flex items-center space-x-2">
+                    <Shield className="h-5 w-5 text-[hsl(var(--verification-blue))]" />
+                    <span>🔐 AES-256 Encryption</span>
+                  </h3>
+                  <Badge variant="info">Enabled</Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">Data at Rest</span>
+                    <span className="text-sm font-semibold">✓ Encrypted</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">Data in Transit</span>
+                    <span className="text-sm font-semibold">✓ TLS 1.3</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">Key Management</span>
+                    <span className="text-sm font-semibold">✓ HSM Protected</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold flex items-center space-x-2">
+                    <UserCheck className="h-5 w-5 text-[hsl(var(--verification-blue))]" />
+                    <span>🔐 Role-Based Access Control</span>
+                  </h3>
+                  <Badge variant="outline">Active</Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">Admin Users</span>
+                    <span className="text-sm font-semibold">3 Active</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">Verifier Agents</span>
+                    <span className="text-sm font-semibold">12 Online</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(var(--text-secondary))]">System Access</span>
+                    <span className="text-sm font-semibold">Restricted</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-[hsl(var(--verification-blue))]/10 rounded-lg">
+                <h3 className="font-semibold mb-3">Compliance Standards</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <Badge variant="outline">ISO 27001</Badge>
+                  <Badge variant="outline">SOC 2 Type II</Badge>
+                  <Badge variant="outline">GDPR</Badge>
+                  <Badge variant="outline">PCI DSS</Badge>
+                </div>
+              </div>
+
+              <Button
+                className="w-full bg-[hsl(var(--verification-blue))] hover:bg-[hsl(var(--verification-blue))]/90 text-[hsl(var(--primary-foreground))]"
+                size="lg"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Manage Data Permissions
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Visual Flow */}
       {isOpenmodal && (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-xl">🧬 Verification Journey</CardTitle>
-          <CardDescription>Track your verification progress in real-time</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col space-y-4 p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-[hsl(var(--eco-green))] rounded-full flex items-center justify-center text-[hsl(var(--primary-foreground))] font-bold">
-                  1
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-xl">🧬 Verification Journey</CardTitle>
+            <CardDescription>Track your verification progress in real-time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col space-y-4 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className={`w-12 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]" : "bg-[hsl(var(--eco-green))]"} rounded-full flex items-center justify-center text-[hsl(var(--primary-foreground))] font-bold`}>
+                    1
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">🏪 Seller Registration</h3>
+                    <p className="text-sm text-[hsl(var(--text-secondary))]">Business details & documents</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold">🏪 Seller Registration</h3>
-                  <p className="text-sm text-[hsl(var(--text-secondary))]">Business details & documents</p>
-                </div>
+                <Badge variant={fraudDetails ? "error" : "success"}>
+                  {fraudDetails ? "Failed" : "Completed"}
+                </Badge>
               </div>
-              <Badge variant="success">Completed</Badge>
-            </div>
 
-            <div className="flex items-center">
-              <div className="w-1 h-12 bg-[hsl(var(--eco-green))]/30 ml-6"></div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-[hsl(var(--verification-blue))] rounded-full flex items-center justify-center text-[hsl(var(--primary-foreground))] font-bold">
-                  2
-                </div>
-                <div>
-                  <h3 className="font-semibold">✅ AI Verification</h3>
-                  <p className="text-sm text-[hsl(var(--text-secondary))]">UIDAI, NSDL & brand validation</p>
-                </div>
+              <div className="flex items-center">
+                <div className={`w-1 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : "bg-[hsl(var(--eco-green))]/30"} ml-6`}></div>
               </div>
-              <Badge variant="info">Processing</Badge>
-            </div>
 
-            <div className="flex items-center">
-              <div className="w-1 h-12 bg-[hsl(var(--button-secondary))] ml-6"></div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-[hsl(var(--button-secondary))] rounded-full flex items-center justify-center text-[hsl(var(--text-secondary))] font-bold">
-                  3
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className={`w-12 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]" : "bg-[hsl(var(--verification-blue))]"} rounded-full flex items-center justify-center text-[hsl(var(--primary-foreground))] font-bold`}>
+                    2
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">✅ AI Verification</h3>
+                    <p className="text-sm text-[hsl(var(--text-secondary))]">UIDAI, NSDL & brand validation</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-[hsl(var(--text-secondary))]">🆔 ID Generation</h3>
-                  <p className="text-sm text-[hsl(var(--text-secondary))]">Unique seller ID & blockchain</p>
-                </div>
+                <Badge variant={fraudDetails ? "error" : "info"}>
+                  {fraudDetails ? "Failed" : "Processing"}
+                </Badge>
               </div>
-              <Badge variant="outline">Pending</Badge>
-            </div>
 
-            <div className="flex items-center">
-              <div className="w-1 h-12 bg-[hsl(var(--button-secondary))] ml-6"></div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-[hsl(var(--button-secondary))] rounded-full flex items-center justify-center text-[hsl(var(--text-secondary))] font-bold">
-                  4
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[hsl(var(--text-secondary))]">🔗 EcoChain Link</h3>
-                  <p className="text-sm text-[hsl(var(--text-secondary))]">Final blockchain verification</p>
-                </div>
+              <div className="flex items-center">
+                <div className={`w-1 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : "bg-[hsl(var(--button-secondary))]"} ml-6`}></div>
               </div>
-              <Badge variant="outline">Pending</Badge>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className={`w-12 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : "bg-[hsl(var(--button-secondary))]"} rounded-full flex items-center justify-center ${fraudDetails ? "text-[hsl(var(--badge-error-text))]" : "text-[hsl(var(--text-secondary))]"} font-bold`}>
+                    3
+                  </div>
+                  <div>
+                    <h3 className={`font-semibold ${fraudDetails ? "text-[hsl(var(--badge-error-text))]" : "text-[hsl(var(--text-secondary))]"}`}>
+                      🆔 ID Generation
+                    </h3>
+                    <p className="text-sm text-[hsl(var(--text-secondary))]">Unique seller ID & blockchain</p>
+                  </div>
+                </div>
+                <Badge variant={fraudDetails ? "error" : "outline"}>
+                  {fraudDetails ? "Blocked" : "Pending"}
+                </Badge>
+              </div>
+
+              <div className="flex items-center">
+                <div className={`w-1 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : "bg-[hsl(var(--button-secondary))]"} ml-6`}></div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className={`w-12 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : "bg-[hsl(var(--button-secondary))]"} rounded-full flex items-center justify-center ${fraudDetails ? "text-[hsl(var(--badge-error-text))]" : "text-[hsl(var(--text-secondary))]"} font-bold`}>
+                    4
+                  </div>
+                  <div>
+                    <h3 className={`font-semibold ${fraudDetails ? "text-[hsl(var(--badge-error-text))]" : "text-[hsl(var(--text-secondary))]"}`}>
+                      🔗 EcoChain Link
+                    </h3>
+                    <p className="text-sm text-[hsl(var(--text-secondary))]">Final blockchain verification</p>
+                  </div>
+                </div>
+                <Badge variant={fraudDetails ? "error" : "outline"}>
+                  {fraudDetails ? "Blocked" : "Pending"}
+                </Badge>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>)}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
-
- 
 
 export default AllInOneVerification;

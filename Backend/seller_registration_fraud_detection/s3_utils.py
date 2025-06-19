@@ -1,3 +1,4 @@
+
 import boto3
 import os
 from botocore.exceptions import ClientError
@@ -8,7 +9,8 @@ load_dotenv()
 s3 = boto3.client(
     's3',
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID_S3"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY_S3")
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY_S3"),
+    region_name='ap-south-1' # ADDED: Ensures consistency with other services
 )
 
 BUCKET_NAME = 'hackon0101'

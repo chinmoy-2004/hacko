@@ -114,6 +114,10 @@ const Header = ({ cartItemCount, onCartClick }) => {
                             <div className="text-sm font-bold">Account & Lists</div>
                         </div>
 
+                        <Link className='cursor-pointer' to="/Sellerdashboard">
+                          Seller-dashboard
+                        </Link>
+
                         <div className="hidden md:block cursor-pointer">
                             <div className="text-xs text-gray-300">Returns</div>
                             <div className="text-sm font-bold">& Orders</div>

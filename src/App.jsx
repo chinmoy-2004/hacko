@@ -17,10 +17,14 @@ import ApplyCertificate from './pages/Applyfoecertecochain.jsx';
 import { Toaster } from 'react-hot-toast';
 import useEcosense from './store/ecosense.store.js';
 import RestrictsellerModal from './components/Restrictunverifedseller.jsx';
+import SellerDashboard from './pages/Sellerdashboard.jsx';
+import AddProduct from './pages/Addproduct.jsx';
+import useEcochainStore from './store/ecochain.store.js';
 
 const App = () => {
 
   const { issellerverify } = useEcosense();
+  const { isproductverified } = useEcochainStore();
 
   return (
     <>
@@ -36,6 +40,8 @@ const App = () => {
         <Route path="/user-dashboard" element={<UserDashboard/>} />
         <Route path="/cart" element={<Cart/>} />
         <Route path="/applyforcertification" element={issellerverify? <ApplyCertificate/> : <RestrictsellerModal/>}/>
+        <Route path="/Sellerdashboard" element={issellerverify? <SellerDashboard/>:<RestrictsellerModal/>}/>
+        <Route path="/addproduct" element={isproductverified? <AddProduct/>:<ApplyCertificate/>}/>
       </Routes>
       <Footer/>
       <ToastContainer/>

@@ -1,7 +1,4 @@
 import { Link } from "react-router-dom";
-import APIAccess from "../components/Apiacessecochain.jsx";
-import ApplyCertification from "../components/Applycertificationchain.jsx";
-import BlockchainDiagram from "../components/Blockchaindia.jsx";
 import CertificatesPanel from "../components/Certificatepanel.jsx";
 import TrackCertification from "../components/Trackcertecochian.jsx";
 import VerifyECT from "../components/Verifyectecochain.jsx";

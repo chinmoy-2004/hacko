@@ -1,6 +1,12 @@
 import AllInOneVerification from '../components/Allinoneverification.jsx';
 
+
 const Ecosense = () => {
+
+  
+  
+
+  
   return (
     <div className="min-h-screen bg-green-50">
      

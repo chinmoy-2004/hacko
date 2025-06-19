@@ -75,7 +75,7 @@ const TrackCertification = () => {
         <div className="space-y-4">
           <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
             <img
-              src="/lovable-uploads/d83f74c7-42c5-4c0e-8c8c-fefaf61919ae.png"
+              src="https://res.cloudinary.com/dha6uxjvn/image/upload/v1750272151/tshirt_ynusun.webp"
               alt="Organic Cotton Polo Shirt"
               className="w-full h-full object-cover"
             />

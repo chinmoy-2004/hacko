@@ -7,6 +7,10 @@ from werkzeug.utils import secure_filename
 import sqlite3
 import random
 from datetime import datetime
+from flask_cors import CORS
+import cloudinary
+import cloudinary.uploader
+
 
 # --- Model and Utility Imports ---
 # Note: Ensure these modules are in the correct paths relative to this app.py file.
@@ -40,6 +44,7 @@ from models import blockchain
 
 # --- Flask App Initialization and Configuration ---
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 app.secret_key = 'super-secret-key-for-combined-app'
 
 # Combined configurations
@@ -48,6 +53,16 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['RESOURCE_FOLDER'] = 'resource'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 # 16MB max upload
+# Folder for local processed images (box shapes)
+BOX_FOLDER = 'static/box_shapes'
+os.makedirs(BOX_FOLDER, exist_ok=True)
+
+cloudinary.config(
+    cloud_name="dtfz3ezoh",
+    api_key="649135234683513",
+    api_secret="An67jv6knNVTWwJC9kzXmD-k1Eo"
+)
+
 
 # --- Database Initializations ---
 carbon_db.init_db()
@@ -82,18 +97,51 @@ def repack_index():
         if file.filename == '':
             return 'No selected file', 400
 
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+        # filename = secure_filename(file.filename)
+        # filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        # file.save(filepath)
 
-        shape, dims, box_image = repack.detect_shape_and_box(filepath)
+        # shape, dims, box_image = repack.detect_shape_and_box(filepath)
 
-        return render_template('indexrepack.html',
-                               uploaded=True,
-                               shape=shape,
-                               dims=dims,
-                               box_image=url_for('static', filename='box_shapes/' + box_image),
-                               input_image=url_for('static', filename='uploads/' + filename))
+        # return render_template('indexrepack.html',
+        #                        uploaded=True,
+        #                        shape=shape,
+        #                        dims=dims,
+        #                        box_image=url_for('static', filename='box_shapes/' + box_image),
+        #                        input_image=url_for('static', filename='uploads/' + filename))
+        try:
+            filename = secure_filename(file.filename)
+            local_input_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(local_input_path)
+
+            # Detect shape, dimensions, and get processed image filename
+            shape, dims, box_image_filename = repack.detect_shape_and_box(local_input_path)
+
+            # Upload original image to Cloudinary
+            input_upload = cloudinary.uploader.upload(local_input_path, folder="repack/uploads")
+            input_image_url = input_upload['secure_url']
+
+        # Path to locally saved box-shaped image
+            local_box_image_path = os.path.join(BOX_FOLDER, box_image_filename)
+
+        # Upload processed image to Cloudinary
+            box_upload = cloudinary.uploader.upload(local_box_image_path, folder="repack/box_shapes")
+            box_image_url = box_upload['secure_url']
+
+        
+        
+            return jsonify({
+                'shape': shape,
+                'dims': dims,
+                'box_image': box_image_url,
+                'input_image': input_image_url
+            })
+
+        except cloudinary.exceptions.Error as e:
+            return jsonify({'error': f'Cloudinary error: {str(e)}'}), 500
+        except Exception as e:
+            return jsonify({'error': f'Server error: {str(e)}'}), 500
+
 
     return render_template('indexrepack.html', uploaded=False)
 
@@ -126,9 +174,17 @@ def recomm_home():
     conn = get_recomm_db_connection()
     all_products = conn.execute("SELECT * FROM products").fetchall()
     conn.close()
+    # print(personalized, trending, all_products)
+
+    all_products_list = [dict(row) for row in all_products]
     
-    return render_template("indexrecommendation.html", 
-        personalized=personalized, trending=trending, all_products=all_products)
+    # return render_template("indexrecommendation.html", 
+    #     personalized=personalized, trending=trending, all_products=all_products)
+    return jsonify({
+        "personalized": personalized,
+        "trending": trending,
+        "all_products": all_products_list
+    })
 
 @app.route("/recommend/interact/<int:product_id>/<action>")
 def recomm_interact(product_id, action):
@@ -145,17 +201,37 @@ def recomm_interact(product_id, action):
 @app.route("/recommend/add_product", methods=["POST"])
 def recomm_add_product():
     """
-    Purpose: Adds a new product to the recommendation database.
+    Purpose: Adds a new product to the recommendation database and uploads image to Cloudinary.
     """
+    # Handle file upload
+    image_file = request.files.get('image_file')
+    image_url = request.form.get('image_url', '')  # Default empty string
+    
+    # If image file was uploaded, upload to Cloudinary
+    if image_file:
+        try:
+            upload_result = cloudinary.uploader.upload(image_file)
+            image_url = upload_result['secure_url']
+        except Exception as e:
+            
+            return redirect(url_for('recomm_home'))
+    
     product_data = {
-        'name': request.form.get('name'), 'category': request.form.get('category'),
-        'brand': request.form.get('brand'), 'price': float(request.form.get('price', 0)),
-        'eco_score': int(request.form.get('eco_score', 80)), 'image_url': request.form.get('image_url', ''),
+        'name': request.form.get('name'), 
+        'category': request.form.get('category'),
+        'brand': request.form.get('brand'), 
+        'price': float(request.form.get('price', 0)),
+        'eco_score': int(request.form.get('eco_score', 80)), 
+        'image_url': image_url,
         'description': request.form.get('description', '')
     }
+    
     if product_data['name'] and product_data['category'] and product_data['brand']:
         add_product(product_data)
-    return redirect(url_for('recomm_home'))
+    else:
+        return jsonify({"status": "error", "message": "Missing required product fields"}), 400
+        
+    return jsonify({"status": "success", "message": "Product added successfully"}), 201
 
 
 # --- Seller Registration Fraud Detection Routes (from appseller.py) ---
@@ -223,18 +299,34 @@ def carbon_estimate():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         result = estimate_carbon_from_image(filepath)
+        print(result)
         if result:
             carbon_db.save_user_action(session['user_id'], 'image_upload', result['total_carbon'])
-            return render_template('result.html', method='image', result=result)
+            # return render_template('result.html', method='image', result=result)
+            return result,200
     
+    # Handle text description
     elif 'description' in request.form and request.form['description'].strip():
         description = request.form['description']
         estimate = estimate_carbon_from_description(description)
         if estimate is not None:
             carbon_db.save_user_action(session['user_id'], description, estimate)
-            return render_template('result.html', method='description', result={'total_carbon': estimate, 'description': description})
+            result = {
+                'total_carbon': estimate,
+                'description': description
+            }
+        else:
+            # FIX: If estimation fails, create a specific error message in the JSON
+            # instead of letting the route fail.
+            result = {'error': 'Could not estimate from description. Please try being more specific (e.g., "a 500ml plastic bottle" or "a pair of cotton jeans").'}
     
-    return redirect(url_for('carbon_index'))
+    if result:
+        return jsonify(result)
+    else:
+        # This final error is now only for truly empty/malformed requests
+        return jsonify({'error': 'Could not process the request. Please provide a valid image or description.'}), 400
+
+
 
 @app.route('/carbon/history')
 def carbon_history():
@@ -304,7 +396,9 @@ def bc_submit():
         "image_filename": image_filename
     }
     blockchain.submit_product(product_data)
-    return redirect(url_for('bc_index'))
+    products = blockchain.get_all_products()
+    # return redirect(url_for('index'))
+    return products,201
 
 @app.route('/blockchain/certify/<ect_id>', methods=['POST'])
 def bc_certify(ect_id):
@@ -348,4 +442,4 @@ def bc_get_qr(ect_id):
 
 # --- Main Execution ---
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000)

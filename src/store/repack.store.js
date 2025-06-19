@@ -9,7 +9,7 @@ const useRepackstore = create((set, get) => ({
       const formData = new FormData();
       formData.append('shapeImage', file); // 'shapeImage' should match the backend expectation
 
-      const res = await axiosInstance.post("/upload", formData, {
+      const res = await axiosInstance.post("/repack", formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
