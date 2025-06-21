@@ -1,131 +1,154 @@
 import React, { useState } from 'react';
-import useEcochainStore   from '../store/ecochain.store.js';
-import { Info, Upload } from 'lucide-react';
+import useEcochainStore from '../store/ecochain.store.js';
+import { CheckCircle, AlertCircle, Shield, Search } from 'lucide-react';
 
-// Simple reusable components
-const Button = ({ children, className = '', variant = 'default', size = 'default', onClick, ...props }) => {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50';
-  const variants = {
-    default: 'bg-blue-600 text-white hover:bg-blue-700',
-    outline: 'border border-gray-300 bg-white hover:bg-gray-50',
-    ghost: 'hover:bg-gray-100',
-    secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-  };
-  const sizes = {
-    default: 'h-10 px-4 py-2 text-sm',
-    sm: 'h-8 px-3 text-sm',
-    icon: 'h-10 w-10'
-  };
+// Reusable components (simplified)
+const Button = ({ children, onClick, disabled = false }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+  >
+    {children}
+  </button>
+);
 
-  return (
-    <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
-      onClick={onClick}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-
-const Input = ({ className = '', ...props }) => (
+const Input = ({ value, onChange, onKeyPress }) => (
   <input
-    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
-    {...props}
+    value={value}
+    onChange={onChange}
+    onKeyPress={onKeyPress}
+    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder="Enter ECT ID (e.g., ECT-2024-001234)"
   />
 );
 
-const Card = ({ children, className = '' }) => (
-  <div className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}>
-    {children}
-  </div>
-);
-
-const Badge = ({ children, className = '', variant = 'default' }) => {
-  const variants = {
-    default: 'bg-blue-100 text-blue-800',
-    secondary: 'bg-gray-100 text-gray-800',
-    success: 'bg-green-100 text-green-800'
-  };
-
-  return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variants[variant]} ${className}`}>
-      {children}
-    </span>
-  );
-};
-
-
-// Verify ECT Component
 const VerifyECT = () => {
   const [ectId, setEctId] = useState('');
   const [result, setResult] = useState(null);
-  const {verifyect} = useEcochainStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const { verifyect } = useEcochainStore();
 
-  const handleVerify = async() => {
-     const data = await verifyect(ectId); // wait for verified data
+  const handleVerify = async () => {
+    if (!ectId.trim()) return;
+    
+    setIsLoading(true);
+    try {
+      const data = await verifyect(ectId);
 
-  if (!data) return;
+      if (!data) {
+        setResult({ status: 'Invalid', error: 'Certificate not found' });
+        return;
+      }
 
-  setResult({
-    status: 'Valid',
-    certificateBody: data.certifying_body,
-    carbonSaved: data.carbon_kg,
-    productName: data.product_name,
-    productId: data.product_id,
-    issueDate: new Date(data.issued_at).toLocaleDateString(),
-    expiryDate: new Date(
-      new Date(data.issued_at).getTime() + 365 * 24 * 60 * 60 * 1000
-    ).toLocaleDateString(),
-    manufacturer: data.manufacturer,
-    materials: data.materials,
-    category: data.category
-  });
+      setResult({
+        status: 'Valid',
+        certificateBody: data.certifying_body,
+        carbonSaved: data.carbon_kg,
+        productName: data.product_name,
+        productId: data.product_id,
+        issueDate: new Date(data.issued_at).toLocaleDateString(),
+        expiryDate: new Date(
+          new Date(data.issued_at).getTime() + 365 * 24 * 60 * 60 * 1000
+        ).toLocaleDateString(),
+        manufacturer: data.manufacturer,
+        materials: data.materials,
+        category: data.category
+      });
+    } catch (error) {
+      setResult({ status: 'Error', error: 'Failed to verify certificate' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleVerify();
+    }
   };
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">✅ Verify ECT</h2>
-        <Info className="h-4 w-4 text-gray-400" />
+    <div className="max-w-md mx-auto p-4 space-y-4">
+      <div className="text-center">
+        <h2 className="text-xl font-bold mb-2">Verify ECT Certificate</h2>
+        <p className="text-gray-600 text-sm">Check product authenticity and environmental credentials</p>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Enter ECT ID</label>
-          <Input
-            placeholder="ECT-2024-001234"
-            value={ectId}
-            onChange={(e) => setEctId(e.target.value)}
-          />
-        </div>
-
-        <Button onClick={handleVerify} className="w-full cursor-pointer">
-          Verify Certificate
+      <div className="space-y-3">
+        <Input 
+          value={ectId}
+          onChange={(e) => setEctId(e.target.value)}
+          onKeyPress={handleKeyPress}
+        />
+        <Button 
+          onClick={handleVerify} 
+          disabled={!ectId.trim() || isLoading}
+        >
+          {isLoading ? 'Verifying...' : 'Verify Certificate'}
         </Button>
-
-        {result && (
-          <div className="p-4 border rounded-lg bg-gray-50">
-            <div className="flex items-center space-x-2 mb-3">
-              <div className="h-5 w-5 text-green-600" ></div>
-              <Badge variant="success">{result.status}</Badge>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div><strong>Product:</strong> {result.productName}</div>
-              <div><strong>Product ID:</strong> {result.productId}</div>
-              <div><strong>Certificate Body:</strong> {result.certificateBody}</div>
-              <div><strong>Category:</strong> {result.category}</div>
-              <div><strong>Materials:</strong> {result.materials}</div>
-              <div><strong>Manufacturer:</strong> {result.manufacturer}</div>
-              <div><strong>Carbon Saved:</strong> {result.carbonSaved} kg of Co2</div>
-              <div><strong>Issued At:</strong> {result.issueDate}</div>
-              <div><strong>Expires:</strong> {result.expiryDate}</div>
-            </div>
-          </div>
-        )}
       </div>
-    </Card>
+
+      {result && (
+        <div className={`p-4 rounded-lg border ${result.status === 'Valid' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+          <div className="flex items-center mb-3">
+            {result.status === 'Valid' ? (
+              <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+            ) : (
+              <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+            )}
+            <span className="font-semibold">
+              {result.status === 'Valid' ? 'Valid Certificate' : 'Invalid Certificate'}
+            </span>
+          </div>
+
+          {result.status === 'Valid' ? (
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Product:</span>
+                <span>{result.productName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">ID:</span>
+                <span>{result.productId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Category:</span>
+                <span>{result.category}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Materials:</span>
+                <span>{result.materials}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Manufacturer:</span>
+                <span>{result.manufacturer}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Certified by:</span>
+                <span>{result.certificateBody}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">CO₂ Saved:</span>
+                <span>{result.carbonSaved} kg</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Issued:</span>
+                <span>{result.issueDate}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Expires:</span>
+                <span>{result.expiryDate}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-red-600 text-sm">
+              {result.error || 'Verification failed. Please check the ID and try again.'}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

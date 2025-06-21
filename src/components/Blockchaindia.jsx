@@ -67,7 +67,7 @@ const BlockchainDiagram = () => {
             <div className="w-3 h-3 bg-green-500 rounded-full"></div>
             <span>Powered by Ethereum Blockchain</span>
           </span>
-          <span className="text-gray-600">Average processing time: 3-5 business days</span>
+          
         </div>
       </div>
     </Card>

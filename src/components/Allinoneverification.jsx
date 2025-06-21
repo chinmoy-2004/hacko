@@ -186,10 +186,7 @@ const AllInOneVerification = () => {
   ]);
 
   const [sellerId, setSellerId] = useState('ECO-AI-2024-IN-7849A2B1');
-  const [blockchainHash, setBlockchainHash] = useState('0x8f7a2e9d3c4b5a1f6e8d9c2b4a7f3e6d5c8b1a4f7e9d2c5b8a1f4e7d0c3b6a9f2e5d8c1b4a7f0e3d6c9b2a5f8e1d4c7b0a3f6e9d2c5b8a1f4e7d0c3b6a9f2e5d8c1');
-  const [trustLevel, setTrustLevel] = useState('High');
-  const [isGenerating, setIsGenerating] = useState(false);
-
+ 
   const { toast } = useToast();
 
   const handleInputChange = (field, value) => {
@@ -221,6 +218,8 @@ const AllInOneVerification = () => {
 
       const response = await sellerVerification(formData);
       setVerificationResult(response.data);
+      setSellerId(response.data.seller_id);
+      console.log("Verification response:", response);
 
       if (response.data.status === 'fraud') {
         setFraudDetails(response.data);
@@ -240,10 +239,7 @@ const AllInOneVerification = () => {
         }
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Verification failed. Please try again.",
-      });
+      console.error("Error during verification:", error);
     }
   };
 
@@ -345,25 +341,7 @@ const AllInOneVerification = () => {
     });
   };
 
-  const generateNewId = async () => {
-    setIsGenerating(true);
-
-    setTimeout(() => {
-      const newId = `ECO-AI-2024-IN-${Math.random().toString(16).substr(2, 8).toUpperCase()}`;
-      const newHash = `0x${Math.random().toString(16).substr(2, 128)}`;
-
-      setSellerId(newId);
-      setBlockchainHash(newHash);
-      setTrustLevel(['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)]);
-      setIsGenerating(false);
-
-      toast({
-        title: "New Seller ID Generated",
-        description: "Your unique seller ID has been created and recorded on blockchain.",
-      });
-    }, 3000);
-  };
-
+  
   const copyToClipboard = (text, type) => {
     navigator.clipboard.writeText(text);
     toast({
@@ -700,14 +678,7 @@ const AllInOneVerification = () => {
                     <span>🚀</span>
                     <span>Your Seller Unique ID</span>
                   </h3>
-                  <Button
-                    onClick={generateNewId}
-                    disabled={isGenerating}
-                    variant="outline"
-                    size="sm"
-                  >
-                    {isGenerating ? 'Generating...' : 'Regenerate'}
-                  </Button>
+                  
                 </div>
 
                 <div className="bg-[hsl(var(--card-bg))] p-4 rounded-lg border border-[hsl(var(--card-border))]">

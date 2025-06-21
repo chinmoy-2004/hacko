@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import axiosInstance from "../lib/axios.js";
 import toast from "react-hot-toast";
-import useEcosense from "./ecosense.store.js";
+
+import useSellerStore from "./Seller.store.js";
 
 
-const { seller_name } = useEcosense.getState(); // Import seller_name from ecosense store
+const { fetchProducts } = useSellerStore();
 
 const useEcochainStore = create((set, get) => ({
   product_name: "",
@@ -15,8 +16,11 @@ const useEcochainStore = create((set, get) => ({
   manufacturer: "",
   materials: "",
   category: "",
-  block_hash:"",
-  
+  block_hash: "",
+  products: [],
+  ect_id: "",
+  grade: "",
+
 
   isproductverified: false,
 
@@ -37,20 +41,17 @@ const useEcochainStore = create((set, get) => ({
       } = response.data[0];
 
       // seller_name, product_name, product_id, ect_no, hash_no
+      set({ ect_id: ect_id });
 
-      const formDataObj = new FormData();
-      formDataObj.append('seller_name', seller_name); //Replace from ecosense seller store 
-      formDataObj.append('product_name', product_name);
-      formDataObj.append('product_id', product_id);
-      formDataObj.append('ect_no', ect_id);
-      formDataObj.append('hash_no', block_hash);
+      fetchProducts(); // Fetch products after submission
 
-      get().getCertificate(formDataObj);
+      // get().getCertificate(formDataObj);
 
-      set({isproductverified: true}); // Set the verification status to true
-      
+      set({ isproductverified: true }); // Set the verification status to true
+
       console.log(response.data)
-      return response.data; // ✅ Return the data for external use
+      // set({ products: response.data.slice(0, 10) }); // Store the products in Zustand state
+      // return response.data; // ✅ Return the data for external use
 
     } catch (error) {
       console.error("Error submitting data:", error);
@@ -90,7 +91,9 @@ const useEcochainStore = create((set, get) => ({
         // });
 
         toast.success("ECT ID verified successfully!");
+          console.log(response.data);
         return response.data; // ✅ Return the data for external use
+      
       } else {
         toast.error("Failed to verify ECT ID.");
         return null;
@@ -103,52 +106,63 @@ const useEcochainStore = create((set, get) => ({
   },
 
   getCertificate: async (formdata) => {
-  try {
-    const res = await axiosInstance.post("/certificate/generate_product", formdata, {
-      responseType: 'blob', // Important for file downloads
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-    
-    // Create a download link for the PDF
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'product_certificate.pdf');
-    document.body.appendChild(link);
-    link.click();
-    
-    // Clean up
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-    
-    toast.success("Certificate downloaded successfully!");
-    return true;
-  } catch (error) {
-    console.log("Error in certificate generation:", error);
-    toast.error(error.response?.data?.message || "Failed to generate certificate");
-    return false;
-  }
-},
+    try {
+      const res = await axiosInstance.post("/certificate/generate_product", formdata, {
+        responseType: 'blob', // Important for file downloads
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
-addproduct:async (formData) => {
-  try {
-    console.log("Adding product:", formData);
-    const response = await axiosInstance.post('/recommend/add_product', formData);
-    console.log("Response from server:", response.data);
-    if(response.data.status=="success"){
-    toast.success("Product added successfully!");
+      // Create a download link for the PDF
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'product_certificate.pdf');
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Certificate downloaded successfully!");
+      return true;
+    } catch (error) {
+      console.log("Error in certificate generation:", error);
+      toast.error(error.response?.data?.message || "Failed to generate certificate");
+      return false;
     }
-    else  toast.error("Failed to add product.");
-    set({isproductverified:false})
-   
-  } catch (error) {
-    console.error("Error adding product:", error);
-    toast.error("An error occurred while adding the product.");
+  },
+
+  addproduct: async (formData) => {
+    try {
+      console.log("Adding product:", formData);
+      const response = await axiosInstance.post('/recommend/add_product', formData);
+      console.log("Response from server:", response.data);
+      if (response.data.status == "success") {
+        toast.success("Product added successfully!");
+      }
+      else toast.error("Failed to add product.");
+      set({ isproductverified: false })
+
+    } catch (error) {
+      console.error("Error adding product:", error);
+      toast.error("An error occurred while adding the product.");
+    }
+  },
+
+  getgrading: async (formData) => {
+    try {
+      const res = await axiosInstance.post('/grading', formData);
+      console.log("Response from grading:", res.data.grade);
+      set({ grade: res.data.grade });
+    } catch (error) {
+      console.log("Error in grading:", error);
+      toast.error("An error occurred while fetching the grade.");
+    }
   }
-}
-  
+
 }));
 
 export default useEcochainStore;

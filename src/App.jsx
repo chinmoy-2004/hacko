@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import Ecochain from './pages/Ecochainpage.jsx';
@@ -24,11 +24,18 @@ import RestrictsellerModal from './components/Restrictunverifedseller.jsx';
 import SellerDashboard from './pages/Sellerdashboard.jsx';
 import AddProduct from './pages/Addproduct.jsx';
 import useEcochainStore from './store/ecochain.store.js';
+import useSellerStore from './store/Seller.store.js';
 
 const App = () => {
 
   const { issellerverify } = useEcosense();
   const { isproductverified } = useEcochainStore();
+
+   const { fetchProducts } = useSellerStore();
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
 
   return (
     <>

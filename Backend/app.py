@@ -20,15 +20,22 @@ import cloudinary.uploader
 from models import repack
 
 # From Recommendation Project
-from adv_recommendation.personalize import PersonalizeRecommender
+from adv_recommendation.personalize import PersonalizedRecommender
 from adv_recommendation.trending import TrendingRecommender
 from database.data_add import add_user, add_product, add_interaction
 
-# From Seller Registration Project
+from Badges_Grading_System.grading import grade_product_from_description
+
+
+# From Seller Registration Fraud Detection Project
+
 from seller_registration_fraud_detection.kms_utils import encrypt_data
 from seller_registration_fraud_detection.rekognition_utils import compare_faces
-from seller_registration_fraud_detection.s3_utils import upload_image, list_images, BUCKET_NAME
-from seller_registration_fraud_detection.database_utils import insert_seller, get_all_encrypted_pan_gst
+from seller_registration_fraud_detection.s3_utils import upload_image, BUCKET_NAME
+from seller_registration_fraud_detection.database_utils import insert_seller, get_all_encrypted_pan_gst, get_all_selfie_keys
+import uuid
+import traceback
+
 
 # From Carbon Karma Project
 from Carbon_Karma.carbon_image import estimate_carbon_from_image
@@ -53,6 +60,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['RESOURCE_FOLDER'] = 'resource'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 # 16MB max upload
+app.config['RECOMM_DATABASE'] = 'database/amazon_recs.db'
+
 # Folder for local processed images (box shapes)
 BOX_FOLDER = 'static/box_shapes'
 os.makedirs(BOX_FOLDER, exist_ok=True)
@@ -147,6 +156,7 @@ def repack_index():
 
 
 # --- Eco Recommendation System Routes (from apprecomm.py) ---
+
 @app.route("/recommend", methods=["GET", "POST"])
 def recomm_home():
     """
@@ -163,13 +173,24 @@ def recomm_home():
         if query:
             add_interaction(user_id=session['user_id'], action_type='search', query=query)
         return redirect(url_for('recomm_home'))
-    
     try:
-        personalized = PersonalizeRecommender().get_recommendations(session['user_id']) or []
-        trending = TrendingRecommender().get_trending() or []
+        # FIX: Pass the database path explicitly and add logging.
+        personalize_rec = PersonalizedRecommender()
+        trending_rec = TrendingRecommender()
+
+        print(f"Fetching recommendations for user_id: {user_id}")
+        personalized = personalize_rec.get_recommendations(user_id) or []
+        print(f"Found {len(personalized)} personalized items.")
+        
+        trending = trending_rec.get_trending() or []
+        print(f"Found {len(trending)} trending items.")
+
     except Exception as e:
-        print(f"Error getting recommendations: {e}")
+        # FIX: Add more detailed error logging to diagnose issues.
+        print(f"ERROR in recomm_home: {e}")
+        # traceback.print_exc()
         personalized, trending = [], []
+
     
     conn = get_recomm_db_connection()
     all_products = conn.execute("SELECT * FROM products").fetchall()
@@ -206,33 +227,51 @@ def recomm_add_product():
     # Handle file upload
     image_file = request.files.get('image_file')
     image_url = request.form.get('image_url', '')  # Default empty string
+    print(f"Image file received: {image_file}, Image URL: {image_url}")
     
     # If image file was uploaded, upload to Cloudinary
     if image_file:
         try:
             upload_result = cloudinary.uploader.upload(image_file)
             image_url = upload_result['secure_url']
+            print(f"Image uploaded to Cloudinary: {image_url}")
         except Exception as e:
-            
+            print(f"Error uploading to Cloudinary: {str(e)}")
             return redirect(url_for('recomm_home'))
-    
-    product_data = {
-        'name': request.form.get('name'), 
-        'category': request.form.get('category'),
-        'brand': request.form.get('brand'), 
-        'price': float(request.form.get('price', 0)),
-        'eco_score': int(request.form.get('eco_score', 80)), 
-        'image_url': image_url,
-        'description': request.form.get('description', '')
-    }
-    
-    if product_data['name'] and product_data['category'] and product_data['brand']:
-        add_product(product_data)
-    else:
-        return jsonify({"status": "error", "message": "Missing required product fields"}), 400
-        
-    return jsonify({"status": "success", "message": "Product added successfully"}), 201
+   
 
+    try:
+        product_data = {
+            'name': request.form['name'],
+            'category': request.form['category'],
+            'brand': request.form['brand'],
+            'price': float(request.form['price']),
+            'eco_score': int(request.form['eco_score']),
+            'image_url': image_url,  # Use the uploaded URL or the provided one
+            'description': request.form.get('description', ''),
+            'grading': request.form.get('grading', ''),
+            'ect_no': request.form.get('ect_no', '')
+        }
+        print(f"Attempting to add product with data: {product_data}")
+        
+        product_id = add_product(product_data)
+        if product_id:
+            print(f"Successfully added product with ID: {product_id}")
+            return jsonify({"status": "success", "message": "Product added successfully"}), 201
+        else:
+            print("Failed to add product - missing required fields")
+            return jsonify({"status": "error", "message": "Missing required product fields"}), 400
+    except ValueError as ve:
+        print(f"ValueError occurred: {str(ve)}")
+        return jsonify({"status": "error", "message": "Invalid data format"}), 400
+    except KeyError as ke:
+        print(f"KeyError occurred - missing form field: {str(ke)}")
+        return jsonify({"status": "error", "message": f"Missing required field: {str(ke)}"}), 400
+    except Exception as e:
+        print(f"Unexpected error occurred: {str(e)}")
+        return jsonify({"status": "error", "message": "An unexpected error occurred"}), 500
+    
+    
 
 # --- Seller Registration Fraud Detection Routes (from appseller.py) ---
 @app.route("/seller", methods=["GET"])
@@ -243,40 +282,96 @@ def seller_index():
     return render_template("indexsellerreg.html")
 
 @app.route("/seller/register", methods=["POST"])
-def seller_register():
+def register():
     """
     Purpose: Handles seller registration, performs fraud checks, and returns the result.
     """
-    name, pan, gst = request.form.get("name"), request.form.get("pan"), request.form.get("gst")
-    doc_image, selfie_image = request.files.get("doc_image"), request.files.get("selfie_image")
+    # 1. Get form data and validate
+    name = request.form.get("name")
+    pan = request.form.get("pan")
+    gst = request.form.get("gst")
+    doc_image_file = request.files.get("doc_image")
+    selfie_image_file = request.files.get("selfie_image")
 
-    if not all([name, pan, gst, doc_image, selfie_image]):
+    if not all([name, pan, gst, doc_image_file, selfie_image_file]):
         return jsonify({"status": "error", "message": "All fields are required"}), 400
 
-    doc_key, selfie_key = f"documents/{uuid.uuid4()}_{doc_image.filename}", f"selfies/{uuid.uuid4()}_{selfie_image.filename}"
-    existing_docs, existing_entries = list_images("documents"), get_all_encrypted_pan_gst()
-    
+    # 2. Prepare unique keys and upload images to S3 first
+    seller_id = str(uuid.uuid4())
+    doc_key = f"sellers/{seller_id}/document.jpg"
+    selfie_key = f"sellers/{seller_id}/selfie.jpg"
+
     try:
-        enc_pan, enc_gst = encrypt_data(pan), encrypt_data(gst)
-        upload_image(doc_image.read(), doc_key)
-        upload_image(selfie_image.read(), selfie_key)
-        doc_match = compare_faces(BUCKET_NAME, doc_key, selfie_key)
-        duplicate_face = any(compare_faces(BUCKET_NAME, existing_doc, selfie_key) for existing_doc in existing_docs)
-        duplicate_data = any((enc_pan == db_pan or enc_gst == db_gst) for db_pan, db_gst in existing_entries)
+        upload_image(doc_image_file.read(), doc_key)
+        upload_image(selfie_image_file.read(), selfie_key)
     except Exception as e:
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"Image upload failed: {str(e)}"}), 500
+
+    # 3. Perform all verification checks
+    try:
+        # A. Compare the new document and selfie
+        doc_selfie_comparison = compare_faces(BUCKET_NAME, doc_key, selfie_key)
+        if "error" in doc_selfie_comparison:
+            # Handle the error from Rekognition gracefully
+            return jsonify({"status": "error", "message": doc_selfie_comparison['message']}), 500
+        doc_selfie_match = doc_selfie_comparison.get("match", False)
+
+        # B. Check for duplicate PAN/GST against the database
+        encrypted_pan = encrypt_data(pan)
+        encrypted_gst = encrypt_data(gst)
+        existing_entries = get_all_encrypted_pan_gst()
+        duplicate_data_found = any(
+            (encrypted_pan == db_pan or encrypted_gst == db_gst)
+            for db_pan, db_gst in existing_entries
+        )
+
+        # C. Check for duplicate faces against existing registered sellers from the database
+        duplicate_face_found = False
+        existing_selfie_keys = get_all_selfie_keys()
+        for existing_key in existing_selfie_keys:
+            comparison_result = compare_faces(BUCKET_NAME, selfie_key, existing_key)
+            if "error" in comparison_result:
+                return jsonify({"status": "error", "message": comparison_result['message']}), 500
+            
+            if comparison_result.get("match", False):
+                duplicate_face_found = True
+                break
+
+    except Exception as e:
+        traceback.print_exc()
         return jsonify({"status": "error", "message": f"Verification process failed: {str(e)}"}), 500
 
-    seller_id = str(uuid.uuid4())[:8]
-    insert_seller(seller_id, name, enc_pan, enc_gst, doc_key, selfie_key)
-
+    # 4. Make a decision and finalize
+    is_fraud = not doc_selfie_match or duplicate_data_found or duplicate_face_found
+    
     verification_details = {
-        "document_selfie_match": doc_match, "duplicate_face_found": duplicate_face, "duplicate_data_found": duplicate_data
+        "document_selfie_match": doc_selfie_match,
+        "similarity": doc_selfie_comparison.get("similarity", 0),
+        "duplicate_face_found": duplicate_face_found,
+        "duplicate_data_found": duplicate_data_found
     }
-    if doc_match and not duplicate_face and not duplicate_data:
-        return jsonify({"status": "success", "seller_id": seller_id, "message": "Seller verified successfully", "verification_details": verification_details})
-    else:
-        return jsonify({"status": "fraud", "seller_id": seller_id, "message": "Verification failed - potential fraud detected", "verification_details": verification_details})
 
+    if not is_fraud:
+        # All checks passed. NOW it's safe to register the seller.
+        try:
+            insert_seller(seller_id, name, encrypted_pan, encrypted_gst, doc_key, selfie_key)
+            return jsonify({
+                "status": "success",
+                "seller_id": seller_id,
+                "message": "Seller verified and registered successfully.",
+                "verification_details": verification_details
+            })
+        except Exception as e:
+            traceback.print_exc()
+            return jsonify({"status": "error", "message": f"Failed to save seller data after verification: {str(e)}"}), 500
+    else:
+        # One or more checks failed. Do NOT save the seller.
+        return jsonify({
+            "status": "fraud",
+            "message": "Verification failed - potential fraud detected.",
+            "verification_details": verification_details
+        })
 
 # --- Carbon Karma Routes (from appCarbon_karma.py) ---
 @app.route('/carbon')
@@ -439,7 +534,51 @@ def bc_get_qr(ect_id):
     buf.seek(0)
     return send_file(buf, mimetype='image/png')
 
+@app.route('/grading', methods=['GET', 'POST'])
+def grading_index():
+    """
+    Purpose: Handles product description submission and displays AI-powered sustainability grade.
+    """
+    result = None
+    error = None
+    description = ""  # Initialize to empty string
+
+    if request.method == 'POST':
+        description = request.form.get('description', '').strip()
+        if not description:
+            error = "Please enter a product description to analyze."
+        else:
+            try:
+                # Call the grading function from the imported module
+                grading_result = grade_product_from_description(description)
+                if grading_result:
+                    return jsonify(grading_result)  # Return JSON response
+                else:
+                    error = "The grading service could not analyze the description. It might be too short or lack relevant details."
+            except Exception as e:
+                print(f"ERROR in grading_index: {e}")
+                error = "An unexpected error occurred while contacting the grading service."
+
+    # For GET requests or when there's an error
+    return jsonify({
+        'error': error,
+        'description': description,
+        'result': result
+    })
+
+
+@app.route('/get_all_product')
+def getallproduct():
+    """
+    Purpose: gett all products of a seller.
+    """
+    products = blockchain.get_all_products()
+    # return redirect(url_for('index'))
+    return products,201
+
 
 # --- Main Execution ---
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
+
+

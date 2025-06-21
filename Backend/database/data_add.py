@@ -53,6 +53,8 @@ def add_product(product_data):
             - eco_score: Integer 0-100
             - image_url: Product image URL
             - description: Product description
+            - grading: Product grade (e.g., 'A', 'B')
+            - ect_no: ECT Number
     Returns:
         The created product_id
     """
@@ -70,8 +72,8 @@ def add_product(product_data):
 
         conn.execute(
             """INSERT INTO products 
-            (product_id, name, category, brand, price, eco_score, image_url, description) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (product_id, name, category, brand, price, eco_score, image_url, description, grading, ect_no) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 product_id,
                 product_data['name'],
@@ -80,7 +82,9 @@ def add_product(product_data):
                 product_data['price'],
                 product_data['eco_score'],
                 product_data.get('image_url'),
-                product_data.get('description', '')
+                product_data.get('description', ''),
+                product_data.get('grading'),
+                product_data.get('ect_no')
             )
         )
         conn.commit()
@@ -95,56 +99,36 @@ def add_product(product_data):
 # 3. Function to record user interactions
 def add_interaction(user_id, product_id=None, action_type="view", query=None):
     """
-    Record a user interaction
+    Record a user interaction with a product or search
     Args:
-        user_id: Required user ID
-        product_id: Product ID (optional for searches)
-        action_type: 'view', 'purchase', or 'search'
-        query: Search query string (for action_type='search')
-    Returns:
-        interaction_id if successful, None otherwise
+        user_id: ID of the user
+        product_id: Optional, ID of the product
+        action_type: Type of action ('view', 'purchase', 'search')
+        query: Optional, search query string
     """
-    valid_actions = ['view', 'purchase', 'search']
-    if action_type not in valid_actions:
-        print(f"Invalid action type. Must be one of: {valid_actions}")
-        return None
-
     conn = get_db()
     try:
-        # Verify user exists
-        user = conn.execute("SELECT 1 FROM users WHERE user_id = ?", (user_id,)).fetchone()
-        if not user:
-            print(f"User {user_id} does not exist")
-            return None
+        # Get current timestamp
+        timestamp = int(datetime.now().timestamp())
 
-        # Verify product exists if specified
-        if product_id:
-            product = conn.execute("SELECT 1 FROM products WHERE product_id = ?", (product_id,)).fetchone()
-            if not product:
-                print(f"Product {product_id} does not exist")
-                return None
-
+        # Insert interaction record
         conn.execute(
-            """INSERT INTO interactions 
-            (user_id, product_id, action, query, timestamp) 
+            """INSERT INTO interactions (user_id, product_id, action_type, timestamp, query) 
             VALUES (?, ?, ?, ?, ?)""",
-            (user_id, product_id, action_type, query, datetime.now())
+            (user_id, product_id, action_type, timestamp, query)
         )
         conn.commit()
-        interaction_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
-        print(f"Recorded {action_type} interaction for user {user_id}")
-        return interaction_id
+        print(f"Recorded {action_type} interaction for user {user_id}, product {product_id}")
     except Exception as e:
         print(f"Error recording interaction: {e}")
-        return None
     finally:
         conn.close()
 
 # Example usage
-if __name__ == "__main__":
-    # Initialize sample data
-    from init_db import initialize_database  # Your existing initialization
-    initialize_database()
+if __name__ == "_main_":
+    # NOTE: The original init_db.py creates a file named 'amazon_recs.db'
+    # This script assumes that file exists in the same directory.
+    # If you run this standalone, make sure to run init_db.py first.
     
     # Example: Add a new user
     new_user_id = add_user(name="New Eco Shopper", email="new@example.com")
@@ -157,7 +141,9 @@ if __name__ == "__main__":
         'price': 12.99,
         'eco_score': 85,
         'image_url': 'https://example.com/bamboo_brush.jpg',
-        'description': 'Sustainable bamboo hairbrush with natural bristles'
+        'description': 'Sustainable bamboo hairbrush with natural bristles',
+        'grading': 'A',
+        'ect_no': 'ECT-3004'
     }
     new_product_id = add_product(new_product)
     

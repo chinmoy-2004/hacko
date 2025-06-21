@@ -1,165 +1,204 @@
-# import sqlite3
-# import pandas as pd
-# from sklearn.metrics.pairwise import cosine_similarity
-# from sklearn.feature_extraction.text import TfidfVectorizer
-# from sklearn.metrics.pairwise import linear_kernel
-
-# class PersonalizeRecommender:
-#     def __init__(self):
-#         self.conn = sqlite3.connect('database/amazon_recs.db')
-    
-#     def _get_item_similarity(self):
-#         """Item-based collaborative filtering using purchase history"""
-#         interactions = pd.read_sql(
-#             "SELECT user_id, product_id FROM interactions WHERE action='purchase'", 
-#             self.conn
-#         )
-#         user_item_matrix = pd.pivot_table(
-#             interactions,
-#             index='user_id',
-#             columns='product_id',
-#             aggfunc=lambda x: 1,
-#             fill_value=0
-#         )
-#         return cosine_similarity(user_item_matrix.T)
-
-#     def _get_content_similarity(self):
-#         """Content-based filtering using product metadata"""
-#         products = pd.read_sql("SELECT * FROM products", self.conn)
-#         products["metadata"] = products["category"] + " " + products["brand"] + " " + products["eco_score"].astype(str)
-#         tfidf = TfidfVectorizer(stop_words="english")
-#         tfidf_matrix = tfidf.fit_transform(products["metadata"])
-#         return linear_kernel(tfidf_matrix, tfidf_matrix)
-
-#     def get_recommendations(self, user_id, n=5):
-#         """Hybrid recommendations (60% CF + 40% Content)"""
-#         # Get user's last purchased item
-#         last_purchase = pd.read_sql(
-#             f"SELECT product_id FROM interactions WHERE user_id={user_id} AND action='purchase' ORDER BY timestamp DESC LIMIT 1",
-#             self.conn
-#         )
-#         if last_purchase.empty:
-#             return []
-        
-#         target_pid = last_purchase.iloc[0]["product_id"]
-        
-#         # Item-based CF
-#         item_sim = self._get_item_similarity()
-#         cf_scores = pd.Series(item_sim[target_pid-1], index=range(1, 501))
-        
-#         # Content-based
-#         content_sim = self._get_content_similarity()
-#         content_scores = pd.Series(content_sim[target_pid-1], index=range(1, 501))
-        
-#         # Hybrid weighted scores
-#         hybrid_scores = (cf_scores * 0.6 + content_scores * 0.4).sort_values(ascending=False)
-#         top_pids = hybrid_scores.index[1:n+1].tolist()  # Exclude self
-        
-#         return pd.read_sql(
-#             f"SELECT * FROM products WHERE product_id IN ({','.join(map(str, top_pids))})",
-#             self.conn
-#         ).to_dict("records")
 
 import sqlite3
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import linear_kernel
+import math
+import random
+# from transformers import GPT2Tokenizer, GPT2LMHeadModel
+# import torch
 
-class PersonalizeRecommender:
-    def __init__(self):
-        self.conn = sqlite3.connect('database/amazon_recs.db')
-        self.all_products = pd.read_sql("SELECT product_id FROM products", self.conn)['product_id'].tolist()
-    
-    def _get_item_similarity(self):
-        """Safe item-based collaborative filtering"""
-        try:
-            interactions = pd.read_sql(
-                "SELECT user_id, product_id FROM interactions WHERE action='purchase'", 
-                self.conn
-            )
-            if len(interactions) < 10:  # Not enough data
-                return None
-                
-            user_item_matrix = pd.pivot_table(
-                interactions,
-                index='user_id',
-                columns='product_id',
-                aggfunc=lambda x: 1,
-                fill_value=0
-            )
-            return cosine_similarity(user_item_matrix.T.fillna(0))
-        except Exception as e:
-            print(f"Error in collaborative filtering: {e}")
-            return None
+# # Load tokenizer and model
+# tokenizer = GPT2Tokenizer.from_pretrained("distilgpt2")
+# model = GPT2LMHeadModel.from_pretrained("distilgpt2")
 
-    def _get_content_similarity(self):
-        """Safe content-based filtering"""
-        try:
-            products = pd.read_sql("SELECT * FROM products", self.conn)
-            products["metadata"] = products["category"] + " " + products["brand"] + " " + products["eco_score"].astype(str)
-            tfidf = TfidfVectorizer(stop_words="english")
-            tfidf_matrix = tfidf.fit_transform(products["metadata"])
-            return linear_kernel(tfidf_matrix, tfidf_matrix)
-        except Exception as e:
-            print(f"Error in content filtering: {e}")
-            return None
+# # Create example user history
+# history = "eco toothbrush, bamboo cup, recycled bag"
+# input_ids = tokenizer.encode(history, return_tensors='pt')
+
+# # Generate next recommendation
+# outputs = model.generate(input_ids, max_length=20, num_return_sequences=1)
+# recommendation = tokenizer.decode(outputs[0])
+
+# print("Recommendation:", recommendation)
+
+# FIX: Use a relative import to robustly find the module within the same package.
+from .trending import TrendingRecommender
+
+class PersonalizedRecommender:
+    def __init__(self, db_path='database/amazon_recs.db'):
+        """Initializes the recommender with a database connection."""
+        self.db_path = db_path
+        self.conn = sqlite3.connect(self.db_path)
+
+    def _del_(self):
+        """Ensures the database connection is closed when the object is destroyed."""
+        if self.conn:
+            self.conn.close()
 
     def get_recommendations(self, user_id, n=5):
-        """Bulletproof hybrid recommendations"""
-        try:
-            # Fallback to popular items if no algorithms work
-            fallback = pd.read_sql(
-                f"""SELECT p.* FROM products p
+        """
+        Generates personalized recommendations for a given user using a hybrid architecture.
+        This orchestrates the entire personalization stream.
+        """
+        # 1. CANDIDATE RETRIEVAL (Collaborative + Content Features)
+        # Mimics retrieving a candidate pool from two-tower models and content embeddings.
+        candidates = self._get_candidate_pool(user_id, pool_size=50)
+        if candidates.empty:
+            # Fallback to general trending items if no candidates are found
+            # FIX: Pass the db_path to the fallback recommender instance.
+            return TrendingRecommender(db_path=self.db_path).get_trending(n)
+
+        # 2. GENERATIVE SEQUENTIAL MODEL (Simulated HSTU-like LLM)
+        # Simulates an LLM generating next-item predictions based on user's recent history.
+        sequential_candidates = self._simulate_sequential_model(user_id, candidates)
+
+        # 3. REINFORCEMENT LEARNING RE-RANKING (Simulated RL Policy)
+        # Simulates an RL agent re-ranking items to optimize for long-term value (eco-score).
+        rl_ranked_candidates = self._simulate_rl_ranking(sequential_candidates)
+
+        # 4. MULTI-ARMED BANDIT SELECTION (Simulated MAB for Exploration)
+        # Simulates a Multi-Armed Bandit (UCB1) to balance exploiting popular items
+        # and exploring lesser-known ones.
+        final_recommendations = self._simulate_mab_selection(rl_ranked_candidates, n)
+
+        return final_recommendations
+
+    def _get_candidate_pool(self, user_id, pool_size=50):
+        """
+        Step 1: Retrieve a broad candidate pool using collaborative and content-based filtering.
+        This simulates the output of a two-tower model.
+        """
+        query = f"""
+            WITH UserPurchases AS (
+                SELECT product_id FROM interactions WHERE user_id = {user_id} AND action = 'purchase'
+            ),
+            SimilarUsers AS (
+                -- Find users who purchased the same items
+                SELECT DISTINCT i.user_id
+                FROM interactions i
+                WHERE i.product_id IN (SELECT product_id FROM UserPurchases) AND i.user_id != {user_id}
+                LIMIT 10
+            ),
+            CollaborativeCandidates AS (
+                -- Get items purchased by similar users
+                SELECT p.*
+                FROM interactions i
+                JOIN products p ON i.product_id = p.product_id
+                WHERE i.user_id IN (SELECT user_id FROM SimilarUsers)
+                  AND i.product_id NOT IN (SELECT product_id FROM UserPurchases)
+            ),
+            ContentCategories AS (
+                -- Get categories of items the user has purchased
+                SELECT DISTINCT p.category
+                FROM products p
                 JOIN interactions i ON p.product_id = i.product_id
-                GROUP BY p.product_id
-                ORDER BY COUNT(i.interaction_id) DESC
-                LIMIT {n}""",
-                self.conn
-            ).to_dict("records")
-            
-            # Get similarities
-            item_sim = self._get_item_similarity()
-            content_sim = self._get_content_similarity()
-            
-            if content_sim is None:
-                return fallback
-                
-            # Get user's last interaction
-            last_interaction = pd.read_sql(
-                f"""SELECT product_id FROM interactions 
-                WHERE user_id={user_id} AND product_id IS NOT NULL
-                ORDER BY timestamp DESC LIMIT 1""",
-                self.conn
+                WHERE i.user_id = {user_id}
+            ),
+            ContentCandidates AS (
+                -- Get other items from those categories
+                SELECT p.*
+                FROM products p
+                WHERE p.category IN (SELECT category FROM ContentCategories)
+                  AND p.product_id NOT IN (SELECT product_id FROM UserPurchases)
             )
+            -- Union the results to create the final pool
+            SELECT * FROM CollaborativeCandidates
+            UNION
+            SELECT * FROM ContentCandidates
+            LIMIT {pool_size}
+        """
+        return pd.read_sql(query, self.conn)
+
+    def _simulate_sequential_model(self, user_id, candidates_df):
+        """
+        Step 2: Simulate a sequential model (like HSTU) by boosting candidates
+        related to the user's most recent interactions.
+        """
+        # Get user's last 3 interactions
+        recent_interactions_query = f"""
+            SELECT product_id FROM interactions
+            WHERE user_id = {user_id}
+            ORDER BY timestamp DESC
+            LIMIT 3
+        """
+        recent_product_ids = pd.read_sql(recent_interactions_query, self.conn)['product_id'].tolist()
+
+        if not recent_product_ids:
+            candidates_df['sequential_score'] = 1.0
+            return candidates_df
+
+        # Get categories of recent items
+        recent_categories_query = f"SELECT DISTINCT category FROM products WHERE product_id IN ({','.join(map(str, recent_product_ids))})"
+        recent_categories = pd.read_sql(recent_categories_query, self.conn)['category'].tolist()
+
+        # Boost score for items in the same category as recent interactions
+        def calculate_sequential_score(row):
+            if row['category'] in recent_categories:
+                return 1.5  # Boost score
+            return 1.0
+
+        candidates_df['sequential_score'] = candidates_df.apply(calculate_sequential_score, axis=1)
+        return candidates_df
+
+    def _simulate_rl_ranking(self, candidates_df):
+        """
+        Step 3: Simulate an RL agent's policy by scoring items based on a
+        reward function that optimizes for eco-friendliness.
+        """
+        # Simple reward: eco_score is a proxy for long-term user satisfaction and alignment.
+        # The RL agent learns that higher eco_score leads to better long-term rewards.
+        candidates_df['rl_score'] = candidates_df['eco_score'] / 100.0
+        candidates_df['final_score'] = candidates_df['sequential_score'] * candidates_df['rl_score']
+        return candidates_df.sort_values(by='final_score', ascending=False)
+
+    def _simulate_mab_selection(self, candidates_df, n):
+        """
+        Step 4: Simulate a Multi-Armed Bandit (UCB1) to balance exploration/exploitation.
+        """
+        if candidates_df.empty:
+            return []
             
-            if last_interaction.empty:
-                return fallback
-                
-            target_pid = last_interaction.iloc[0]["product_id"]
-            
-            # Calculate scores
-            if item_sim is not None and target_pid-1 < len(item_sim):
-                cf_scores = pd.Series(item_sim[target_pid-1], index=self.all_products)
-                content_scores = pd.Series(content_sim[target_pid-1], index=self.all_products)
-                hybrid_scores = (cf_scores * 0.6 + content_scores * 0.4)
-            else:
-                hybrid_scores = pd.Series(content_sim[target_pid-1], index=self.all_products)
-            
-            # Get top recommendations
-            top_pids = hybrid_scores.nlargest(n+1).index.tolist()
-            top_pids = [pid for pid in top_pids if pid != target_pid][:n]
-            
-            result = pd.read_sql(
-                f"SELECT * FROM products WHERE product_id IN ({','.join(map(str, top_pids))})",
-                self.conn
-            ).to_dict("records")
-            
-            return result if result else fallback
-            
-        except Exception as e:
-            print(f"Error in get_recommendations: {e}")
-            return fallback
+        # Get total interactions for all products in the candidate set
+        product_ids_str = ','.join(map(str, candidates_df['product_id'].tolist()))
+        interactions_query = f"""
+            SELECT product_id, COUNT(*) as interaction_count
+            FROM interactions
+            WHERE product_id IN ({product_ids_str})
+            GROUP BY product_id
+        """
+        interactions = pd.read_sql(interactions_query, self.conn).set_index('product_id')
         
-# # Weighted hybrid
-# final_score = 0.7 * CF_score + 0.3 * Metadata_score
+        # Merge interaction counts, filling missing with 1 to avoid division by zero
+        candidates_df = candidates_df.merge(interactions, on='product_id', how='left')
+        candidates_df['interaction_count'] = candidates_df['interaction_count'].fillna(1)
+
+        total_interactions = candidates_df['interaction_count'].sum()
+        if total_interactions == 0: total_interactions = 1
+
+        # UCB1 formula to balance known performance (exploit) with uncertainty (explore)
+        C = 1.5 # Exploration parameter
+        def ucb_score(row):
+            exploitation_term = row['final_score']
+            # Add a small epsilon to log to avoid log(0)
+            exploration_term = C * math.sqrt(math.log(total_interactions + 0.001) / row['interaction_count'])
+            return exploitation_term + exploration_term
+
+        candidates_df['ucb_score'] = candidates_df.apply(ucb_score, axis=1)
+        
+        # Return top N items based on the UCB score
+        top_n_df = candidates_df.sort_values(by='ucb_score', ascending=False).head(n)
+        return top_n_df.to_dict('records')
+
+# Example usage:
+if __name__ == '_main_':
+    # Note: Running this file directly may now cause an error due to the relative import.
+    # This is expected, as this module is designed to be imported by your main app.
+    recommender = PersonalizedRecommender()
+    user_id = 1  # Example user
+    recommendations = recommender.get_recommendations(user_id, n=5)
+    
+    print(f"Personalized recommendations for user {user_id}:")
+    if recommendations:
+        for item in recommendations:
+            print(f"- {item['name']} (Eco-Score: {item['eco_score']}, UCB Score: {item.get('ucb_score', 'N/A'):.2f})")
+    else:
+        print("No recommendations found.")

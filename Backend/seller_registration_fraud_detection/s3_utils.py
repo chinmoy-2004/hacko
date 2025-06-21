@@ -1,4 +1,3 @@
-
 import boto3
 import os
 from botocore.exceptions import ClientError
@@ -29,14 +28,14 @@ def upload_image(file_bytes, key):
     except ClientError as e:
         raise RuntimeError(f"S3 upload failed: {e.response['Error']['Message']}")
 
-def list_images(prefix):
-    try:
-        response = s3.list_objects_v2(
-            Bucket=BUCKET_NAME,
-            Prefix=prefix + '/' if not prefix.endswith('/') else prefix,
-            MaxKeys=1000
-        )
-        return [obj['Key'] for obj in response.get('Contents', []) 
-                if obj['Key'].lower().endswith(('jpg', 'jpeg', 'png'))]
-    except ClientError as e:
-        raise RuntimeError(f"S3 list failed: {e.response['Error']['Message']}")
+# def list_images(prefix):
+#     try:
+#         response = s3.list_objects_v2(
+#             Bucket=BUCKET_NAME,
+#             Prefix=prefix + '/' if not prefix.endswith('/') else prefix,
+#             MaxKeys=1000
+#         )
+#         return [obj['Key'] for obj in response.get('Contents', []) 
+#                 if obj['Key'].lower().endswith(('jpg', 'jpeg', 'png'))]
+#     except ClientError as e:
+#         raise RuntimeError(f"S3 list failed: {e.response['Error']['Message']}")

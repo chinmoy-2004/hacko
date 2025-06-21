@@ -1,3 +1,6 @@
+
+
+
 import sqlite3
 import os
 from contextlib import closing
@@ -64,6 +67,18 @@ def get_all_encrypted_pan_gst():
             return [(row['pan'], row['gst']) for row in cursor.fetchall()]
     except sqlite3.Error as e:
         raise RuntimeError(f"Data retrieval failed: {str(e)}")
+
+def get_all_selfie_keys():
+    """Retrieve all selfie S3 keys from the database."""
+    try:
+        with closing(create_connection()) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT selfie_key FROM sellers")
+            # Return a flat list of keys, which is exactly what's needed for comparison
+            return [row['selfie_key'] for row in cursor.fetchall()]
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Selfie key retrieval failed: {str(e)}")
+
 
 # Initialize database on import
 initialize_database()

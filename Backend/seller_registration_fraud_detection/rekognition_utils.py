@@ -10,7 +10,7 @@ rekognition = boto3.client(
     'rekognition',
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID_GENERAL"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY_GENERAL"),
-    region_name='ap-south-1' # UPDATED: Changed from us-east-1 to match other services
+    region_name='ap-south-1' # FIX: Changed to ap-south-1 to match the S3 bucket region.
 )
 
 def compare_faces(bucket, source_key, target_key, threshold=90):
@@ -31,7 +31,14 @@ def compare_faces(bucket, source_key, target_key, threshold=90):
                 "confidence": best_match['Face']['Confidence']
             }
         return {"match": False, "similarity": 0, "confidence": 0}
+    except rekognition.exceptions.InvalidS3ObjectException as e:
+        # This is the specific error. Return a structured error message.
+        print(f"REKOGNITION ERROR: Cannot access S3 object. Check IAM permissions. Details: {e}")
+        return {"error": "InvalidS3ObjectException", "message": "Rekognition service denied access to the S3 object. Please check the IAM user's S3 read permissions."}
     except rekognition.exceptions.InvalidParameterException:
-        return {"match": False, "similarity": 0, "confidence": 0}
+        # This means an image might not contain a face.
+        print(f"REKOGNITION WARNING: No face found in {source_key} or {target_key}.")
+        return {"error": "NoFaceFound", "message": "Could not find a face in one of the uploaded images. Please upload clear, front-facing photos."}
     except Exception as e:
+        print(f"REKOGNITION ERROR: An unexpected error occurred: {e}")
         raise RuntimeError(f"Rekognition error: {str(e)}")
