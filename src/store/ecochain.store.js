@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import useSellerStore from "./Seller.store.js";
 
 
-const { fetchProducts } = useSellerStore();
+
 
 const useEcochainStore = create((set, get) => ({
   product_name: "",
@@ -43,8 +43,7 @@ const useEcochainStore = create((set, get) => ({
       // seller_name, product_name, product_id, ect_no, hash_no
       set({ ect_id: ect_id });
 
-      fetchProducts(); // Fetch products after submission
-
+      
       // get().getCertificate(formDataObj);
 
       set({ isproductverified: true }); // Set the verification status to true

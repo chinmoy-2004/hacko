@@ -7,11 +7,11 @@ const AIAssistantModal = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const suggestedQuestions = [
-    "How do I dispose of this package?",
-    "Can this material be recycled?",
+    "How do I dispose of this compostable pouch?",
+    "What box should I use for a glass vase?",
     "What is the best disposal method for cardboard?",
     "Where can I find recycling centers near me?",
-    "Is this package compostable?"
+    "Can I switch from plastic mailers to paper for my T-shirts?"
   ];
 
   const handleSuggestedQuestion = (suggestedQuestion) => {
@@ -25,39 +25,93 @@ const AIAssistantModal = ({ isOpen, onClose }) => {
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const chatMessages = [
+        {
+          role: 'system',
+          content: `You are RePack AI Assistant — a smart, sustainability-focused packaging assistant integrated into Amazon’s GreenX platform.
+
+Your role is to help sellers and customers make packaging decisions that reduce plastic waste, optimize delivery efficiency, and minimize environmental impact. You understand eco-packaging materials, shipping logistics, product fragility, and environmental trade-offs.
+
+You MUST always suggest eco-friendly, biodegradable, recyclable, or compostable materials whenever possible, and back your choices with logical reasoning.
+
+---
+
+Your core tasks include:
+
+1. 📦 **Packaging Optimization**:
+   - Recommend optimal box size based on product dimensions.
+   - Minimize void space and suggest the most sustainable filler (e.g., shredded paper, cornstarch peanuts).
+   - Warn against overpacking and unnecessary plastic usage.
+   - Suggest plantable packaging when appropriate.
+
+2. 🌿 **Eco-Friendly Material Guidance**:
+   - Suggest replacements for harmful materials like bubble wrap or Styrofoam.
+   - Recommend materials such as corrugated board, mushroom packaging, kraft paper, etc.
+   - Provide disposal instructions based on recyclability or compostability.
+
+3. 🚚 **Logistics Efficiency**:
+   - Help sellers reduce packaging weight and volume to lower emissions.
+   - Explain how optimized packaging saves cost and fuel during transport.
+
+4. 🧾 **Disposal Instructions**:
+   - Provide clear, step-by-step instructions for how users should dispose of packaging based on material type (cardboard, plastic film, compostable mailers, etc.).
+   - Mention local recycling if asked, and always encourage scanning a QR code for region-specific guides.
+
+5. ♻️ **Environmental Impact Feedback**:
+   - Optionally estimate the CO₂ or plastic reduction if sustainable choices are made (e.g., “Using paper wrap instead of bubble wrap saves ~10g plastic per item”).
+
+---
+
+Example Capabilities:
+- Suggest the best way to pack a fragile ceramic mug using eco materials.
+- Explain how to dispose of a compostable mailer bag.
+- Recommend how to group products in one package to reduce waste.
+- Suggest ways for a seller to reduce their packaging emissions by 30%.
+
+Always be helpful, concise, and sustainability-first in your tone. Your goal is to make packaging both smarter and greener.
+
+`,
+        },
+        ...messages.map(msg => ({
+          role: msg.type === 'user' ? 'user' : 'assistant',
+          content: msg.content,
+        })),
+        { role: 'user', content: question },
+      ];
+
+      const response = await fetch('http://localhost:5000/api/ask-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: chatMessages }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Server error');
+      }
+
+      const aiContent = data.text?.trim() || "Sorry, I couldn't understand the response.";
+
       const aiResponse = {
         id: Date.now() + 1,
         type: 'ai',
-        content: getAIResponse(question)
+        content: aiContent,
       };
-      setMessages(prev => [...prev, aiResponse]);
-      setIsLoading(false);
-      setQuestion('');
-    }, 1500);
-  };
 
-  const getAIResponse = (question) => {
-    const lowerQuestion = question.toLowerCase();
-    
-    if (lowerQuestion.includes('dispose') || lowerQuestion.includes('disposal')) {
-      return "For proper disposal, first identify the material type. Cardboard should be flattened and placed in recycling bins. Plastic containers need to be cleaned and sorted by recycling number. Always check local guidelines as they may vary by location.";
+      setMessages(prev => [...prev, aiResponse]);
+      setQuestion('');
+    } catch (error) {
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'ai',
+        content: `Sorry, I encountered an error: ${error.message}`,
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
-    
-    if (lowerQuestion.includes('recycle') || lowerQuestion.includes('recycling')) {
-      return "Most packaging materials are recyclable! Cardboard, paper, and many plastics can go in your curbside recycling. Remove any tape, labels, or food residue first. Glass and aluminum are also highly recyclable. Check the recycling symbols on packages for specific guidance.";
-    }
-    
-    if (lowerQuestion.includes('cardboard')) {
-      return "Cardboard is one of the most recyclable materials! Remove any tape, staples, or plastic labels. Flatten the boxes to save space. Place in your recycling bin or take to a recycling center. Wet or greasy cardboard should go in regular trash.";
-    }
-    
-    if (lowerQuestion.includes('center') || lowerQuestion.includes('near me')) {
-      return "To find recycling centers near you, try: 1) Check your city's website for local facilities, 2) Use Earth911.com's recycling locator, 3) Contact your waste management company, 4) Check with local grocery stores - many accept certain materials like plastic bags.";
-    }
-    
-    return "That's a great question! For the most accurate disposal guidance, I'd recommend checking your local waste management guidelines, as recycling rules can vary by location. You can also look for recycling symbols on the package or contact your local environmental services.";
   };
 
   const handleKeyPress = (e) => {
@@ -75,7 +129,7 @@ const AIAssistantModal = ({ isOpen, onClose }) => {
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Ask AI Assistant</h2>
-            <button 
+            <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700"
             >
@@ -83,7 +137,7 @@ const AIAssistantModal = ({ isOpen, onClose }) => {
             </button>
           </div>
           <p className="text-gray-600 mt-2">
-            Get instant answers about package disposal, recycling, or material handling. 
+            Get instant answers about package disposal, recycling, or material handling.
             Type your question below or choose from suggestions.
           </p>
         </div>
@@ -123,14 +177,14 @@ const AIAssistantModal = ({ isOpen, onClose }) => {
                 </div>
               </div>
             ))}
-            
+
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-gray-100 text-gray-900 p-3 rounded-lg">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
                 </div>
               </div>

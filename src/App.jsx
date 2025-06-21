@@ -10,7 +10,6 @@ import RepackAI from './pages/RepackAI.jsx';
 import GreenGather from './pages/GreenGatherAI.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
 import Cart from './pages/Cart.jsx';
-import { CartProvider } from './context/CartContext.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ApplyCertificate from './pages/Applyfoecertecochain.jsx';
@@ -24,6 +23,7 @@ import RestrictsellerModal from './components/Restrictunverifedseller.jsx';
 import SellerDashboard from './pages/Sellerdashboard.jsx';
 import AddProduct from './pages/Addproduct.jsx';
 import useEcochainStore from './store/ecochain.store.js';
+import { useCart } from './context/CartContext.jsx';
 import useSellerStore from './store/Seller.store.js';
 
 const App = () => {
@@ -36,11 +36,14 @@ const App = () => {
     useEffect(() => {
         fetchProducts();
     }, []);
+   
+    const {cart} = useCart();
+
 
   return (
     <>
-    <CartProvider>
-      <Header cartItemCount={3} onCartClick={() => {}} />
+    
+      <Header cartItemCount={cart.length} onCartClick={() => {}} />
       <Routes> 
         <Route path="/ecosense-ai" element={<Ecosenseai/>} />
         <Route path="/" element={<Home/>} />
@@ -60,7 +63,7 @@ const App = () => {
       </Routes>
       <Footer/>
       <ToastContainer/>
-      </CartProvider>
+     
       <Toaster/>
       </>
   );

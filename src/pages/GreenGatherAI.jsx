@@ -1,18 +1,58 @@
 import React, { useState, useEffect } from "react";
-import { Package, Coins, Star, Leaf, ShoppingCart, ShoppingBasket, Menu, X } from "lucide-react";
+import { Package, Coins, Star, Leaf, ShoppingCart, ShoppingBasket, Menu, X, PlusCircle, Trash2 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { toast } from "react-toastify";
 import useRecommendStore from "../store/recommend.store.js";
 
+const availableItems = [
+  { name: "Atta", unitPrice: 40 },
+  { name: "Daal", unitPrice: 60 },
+  { name: "Rice", unitPrice: 50 },
+  { name: "Sugar", unitPrice: 30 },
+  { name: "Milk", unitPrice: 25 },
+  { name: "Salt", unitPrice: 20 },
+];
+
 const GreenGather = () => {
+  const [items, setItems] = useState([
+    { name: "Atta", quantity: 5 },
+    { name: "Daal", quantity: 5 },
+    { name: "Milk", quantity: 1 },
+  ]);
+
+  const handleItemChange = (index, field, value) => {
+    const updated = [...items];
+    updated[index][field] = value;
+    setItems(updated);
+  };
+
+  const handleAddItem = () => {
+    setItems([...items, { name: "", quantity: 1 }]);
+  };
+
+  const handleRemoveItem = (index) => {
+    const updated = [...items];
+    updated.splice(index, 1);
+    setItems(updated);
+  };
+const getTotalPrice = () => {
+  return items.reduce((sum, item) => {
+    const found = availableItems.find((i) => i.name === item.name);
+    return sum + (found ? found.unitPrice * item.quantity : 0);
+  }, 0);
+};
+
+const originalPrice = getTotalPrice();
+const discountRate = 0.15;
+const discountedPrice = originalPrice - originalPrice * discountRate;
   const { dispatch } = useCart();
   const [showModal, setShowModal] = useState(false);
   const { isrecommendationsLoading, personalized } = useRecommendStore.getState();
 
-  
+
   const handleAddToCart = (product) => {
-    dispatch({ 
-      type: "ADD_TO_CART", 
+    dispatch({
+      type: "ADD_TO_CART",
       payload: {
         id: product.product_id,
         title: product.name,
@@ -103,18 +143,55 @@ const GreenGather = () => {
         </div>
       </div>
 
-      {/* Subscription Box */}
       <div className="container mx-auto py-8">
         <h2 className="text-3xl font-bold mb-6">Weekly Green Subscription</h2>
-        <div className="border-2 border-green-300 rounded-lg bg-green-50 p-8 flex flex-col lg:flex-row justify-between">
-          <div className="flex-1">
-            <h3 className="text-2xl font-semibold mb-4">Essential Bundle</h3>
-            <ul className="space-y-2 mb-6">
-              <li>✔ Atta 5kg</li>
-              <li>✔ Daal 5kg</li>
-              <li>✔ Milk</li>
-            </ul>
-            <div className="flex space-x-6 mb-6">
+
+        <div className="border-2 border-green-300 rounded-lg bg-green-50 p-8 flex flex-col gap-6">
+
+          {/* Items Selector */}
+          {items.map((item, index) => (
+            <div key={index} className="flex flex-wrap items-center gap-4">
+              <select
+                value={item.name}
+                onChange={(e) => handleItemChange(index, "name", e.target.value)}
+                className="p-2 border rounded-md w-40"
+              >
+                <option value="">Select Item</option>
+                {availableItems.map((i) => (
+                  <option key={i.name} value={i.name}>
+                    {i.name} – ₹{i.unitPrice}/{i.name === "Milk" ? "L" : "kg"}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="number"
+                min="1"
+                value={item.quantity}
+                onChange={(e) => handleItemChange(index, "quantity", parseInt(e.target.value))}
+                className="p-2 border rounded-md w-24"
+                placeholder="Qty"
+              />
+
+              <button
+                onClick={() => handleRemoveItem(index)}
+                className="text-red-600 hover:text-red-800"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          ))}
+
+          <button
+            onClick={handleAddItem}
+            className="flex items-center gap-2 text-green-600 font-medium hover:text-green-800"
+          >
+            <PlusCircle className="w-5 h-5" /> Add Another Item
+          </button>
+
+          {/* Summary */}
+          <div className="flex flex-col lg:flex-row justify-between items-center mt-6 gap-6">
+            <div className="flex gap-6">
               <div className="bg-white p-4 rounded-lg text-center w-32">
                 <div className="text-2xl text-green-600 font-bold">25%</div>
                 <div className="text-sm">Carbon Savings</div>
@@ -127,18 +204,28 @@ const GreenGather = () => {
                 <div className="text-sm">Coin Rewards</div>
               </div>
             </div>
-          </div>
 
-          <div className="text-center flex-1">
-            <div className="text-4xl font-bold mb-2">₹1,499</div>
-            <div className="line-through text-gray-500 mb-4">₹1,899</div>
-            <div className="space-y-3">
-              <button className="w-full bg-green-600 text-white py-3 font-semibold hover:bg-green-700 rounded-md cursor-pointer">Subscribe Now</button>
-              <button className="w-full border border-green-600 text-green-600 py-3 hover:bg-green-200 font-semibold rounded-md cursor-pointer">Add to Basket</button>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-green-700 mb-2">
+                ₹{discountedPrice.toFixed(2)}
+              </div>
+              <div className="line-through text-gray-500 mb-1">₹{originalPrice.toFixed(2)}</div>
+              <div className="text-sm text-green-600 font-medium mb-4">You save 15%!</div>
+
+              <div className="space-3 flex gap-4">
+                <button className="w-60 bg-green-600 text-white py-3 font-semibold hover:bg-green-700 rounded-md cursor-pointer">
+                  Subscribe Now
+                </button>
+                <button className="w-60 border border-green-600 text-green-600 py-3 hover:bg-green-200 font-semibold rounded-md cursor-pointer">
+                  Add to Basket
+                </button>
+              </div>
             </div>
+
           </div>
         </div>
       </div>
+
 
       {/* Compare Eco Products */}
       <div className="container mx-auto py-8">
@@ -163,7 +250,7 @@ const GreenGather = () => {
             {/* VS Section */}
             <div className="flex flex-col justify-center items-center">
               <div className="text-5xl font-extrabold text-green-600 mb-4">VS</div>
-              <button 
+              <button
                 className="px-4 py-2 border border-green-600 text-green-600 rounded-md hover:bg-green-100 font-medium"
                 onClick={() => setShowModal(true)}
               >

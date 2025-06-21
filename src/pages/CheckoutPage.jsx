@@ -16,7 +16,12 @@ const CheckoutPage = () => {
     { id: 2, name: 'Bamboo Toothbrush Set', price: 299, quantity: 1, image: '/toothbrush.jpg' }
   ];
   const deliveryFee = deliveryOption === 'express' ? 29 : 0;
-  const packagingFee = packagingOption === 'gift' ? 25 : 0;
+  const packagingFee =
+  packagingOption === "gift"
+    ? 25
+    : packagingOption === "none"
+    ? 10
+    : 0;
   const finalTotal = total + packagingFee + deliveryFee + carbonOffsetFee;
 
   const getDeliveryDate = () => {
@@ -222,7 +227,7 @@ const CheckoutPage = () => {
                     <Recycle className={`h-5 w-5 mr-2 ${packagingOption === 'minimal' ? 'text-green-600' : 'text-gray-500'}`} />
                     <h4 className="font-medium text-gray-900">Minimal Packaging</h4>
                   </div>
-                  <p className="text-xs text-gray-600">Our default eco-friendly packaging</p>
+                  <p className="text-xs text-gray-600">Our default Cardboard packaging</p>
                 </div>
 
                 <div 
@@ -236,18 +241,32 @@ const CheckoutPage = () => {
                     </div>
                     <span className="text-sm font-medium">+₹25</span>
                   </div>
-                  <p className="text-xs text-gray-600">Recyclable gift wrap with seed paper</p>
+                  <p className="text-xs text-gray-600">Recyclable gift wrap with seed paper along with normal packaging.</p>
+                </div>
+
+               <div 
+                  className={`border rounded-lg p-4 cursor-pointer ${packagingOption === 'paper' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}
+                  onClick={() => setPackagingOption('paper')}
+                >
+                 
+                    <div className="flex items-start">
+                      <Gift className={`h-5 w-5 mr-2 ${packagingOption === 'gift' ? 'text-green-600' : 'text-gray-500'}`} />
+                      <h4 className="font-medium text-gray-900">Paper Packaging</h4>
+                    </div>
+                  <p className="text-xs text-gray-600">Ordinary Eco-Friendly Paper Packaging!</p>
                 </div>
 
                 <div 
                   className={`border rounded-lg p-4 cursor-pointer ${packagingOption === 'none' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}
                   onClick={() => setPackagingOption('none')}
                 >
+                   <div className="flex justify-between items-start mb-2">
                   <div className="flex items-start mb-2">
                     <Leaf className={`h-5 w-5 mr-2 ${packagingOption === 'none' ? 'text-green-600' : 'text-gray-500'}`} />
-                    <h4 className="font-medium text-gray-900">No Extra Packaging</h4>
+                    <h4 className="font-medium text-gray-900">Plantable Packaging</h4>
                   </div>
-                  <p className="text-xs text-gray-600">Bare minimum, most eco-friendly option</p>
+                  <span className="text-sm font-medium">+₹15</span></div>
+                  <p className="text-xs text-gray-600">Seed paper wrap – grows into herbs!</p>
                 </div>
               </div>
             </div>

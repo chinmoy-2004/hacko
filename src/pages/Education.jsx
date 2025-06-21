@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Leaf, X, Droplets, Sun, Sprout, Building2, TreePine, PackageCheck, ScanBarcode, CloudCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
