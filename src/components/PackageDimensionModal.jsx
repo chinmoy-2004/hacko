@@ -439,9 +439,9 @@ const PackageDimensionModal = ({ isOpen, onClose }) => {
 
                   <div className="space-y-4">
                     {[
-                      { label: "Length", value: results.dims[0] },
-                      { label: "Width", value: results.dims[1] },
-                      { label: "Height", value: results.dims[2] }
+                      { label: "Length", value: results.dims[0]/10 },
+                      { label: "Width", value: results.dims[1]/10 },
+                      { label: "Height", value: results.dims[2]/10 }
                     ].map((item, index) => (
                       <div key={index} className="flex items-center justify-between">
                         <span className="text-gray-600">{item.label}</span>

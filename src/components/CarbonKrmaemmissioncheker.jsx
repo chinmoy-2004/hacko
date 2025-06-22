@@ -267,7 +267,7 @@ const EmissionChecker = () => {
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Carbon Emission Result</h2>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-6 my-4">
                   <p className="text-lg font-semibold text-green-800 mb-1">Total Carbon Footprint</p>
-                  <p className="text-3xl font-bold text-green-600">{totalCarbon}g CO₂</p>
+                  <p className="text-3xl font-bold text-green-600">{totalCarbon}g CO₂e</p>
                 </div>
                 <button
                   onClick={closeModals}

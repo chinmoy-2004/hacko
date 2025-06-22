@@ -12,11 +12,7 @@ const Home = () => {
   });
   const { getrecommendations, isrecommendationsLoading } = useRecommendStore();
 
-  const CardContent = ({ children, className = "" }) => (
-    <div className={`p-6 pt-0 ${className}`}>
-      {children}
-    </div>
-  );
+ 
 
   const Card = ({ children, className = "" }) => (
     <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>

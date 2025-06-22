@@ -47,8 +47,9 @@ const discountRate = 0.15;
 const discountedPrice = originalPrice - originalPrice * discountRate;
   const { dispatch } = useCart();
   const [showModal, setShowModal] = useState(false);
-  const { isrecommendationsLoading, personalized } = useRecommendStore.getState();
+  const { isrecommendationsLoading } = useRecommendStore.getState();
 
+  const personalized = useRecommendStore((state) => state.personalized);
 
   const handleAddToCart = (product) => {
     dispatch({

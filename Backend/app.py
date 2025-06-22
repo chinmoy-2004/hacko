@@ -24,6 +24,8 @@ from adv_recommendation.personalize import PersonalizedRecommender
 from adv_recommendation.trending import TrendingRecommender
 from database.data_add import add_user, add_product, add_interaction
 
+import database.search as search_products  # Importing the search function from the database module
+
 from Badges_Grading_System.grading import grade_product_from_description
 
 
@@ -67,9 +69,9 @@ BOX_FOLDER = 'static/box_shapes'
 os.makedirs(BOX_FOLDER, exist_ok=True)
 
 cloudinary.config(
-    cloud_name="dtfz3ezoh",
-    api_key="649135234683513",
-    api_secret="An67jv6knNVTWwJC9kzXmD-k1Eo"
+    cloud_name=os.getenv("CLOUD_NAME"),
+    api_key=os.getenv("API_KEY"),
+    api_secret=os.getenv("API_SECRET")
 )
 
 
@@ -161,51 +163,79 @@ def repack_index():
 def recomm_home():
     """
     Purpose: Displays personalized and trending eco-friendly product recommendations.
+    Returns JSON response with recommendations.
     """
+    # Initialize session for demo user
     if 'user_id' not in session:
         session['user_id'] = random.randint(1, 5)
     if 'logged_in' not in session or not session['logged_in']:
         session['user_id'] = random.randint(1, 5)
-    user_id = session['user_id']
     
+    user_id = session['user_id']
+    search_results = None
+    query = None
+
     if request.method == "POST":
         query = request.form.get("search", "").strip()
         if query:
             add_interaction(user_id=session['user_id'], action_type='search', query=query)
-        return redirect(url_for('recomm_home'))
-    try:
-        # FIX: Pass the database path explicitly and add logging.
-        personalize_rec = PersonalizedRecommender()
-        trending_rec = TrendingRecommender()
+            search_results = search_products.search_products(query)
+            # Return search results if it's a search request
+            return jsonify({
+                "search_results": [dict(row) for row in search_results] if search_results else [],
+                "query": query
+            })
 
-        print(f"Fetching recommendations for user_id: {user_id}")
-        personalized = personalize_rec.get_recommendations(user_id) or []
-        print(f"Found {len(personalized)} personalized items.")
-        
-        trending = trending_rec.get_trending() or []
-        print(f"Found {len(trending)} trending items.")
+    # Get recommendations only if not performing a search
+    personalized = []
+    trending = []
+    if not query:
+        try:
+            personalize_rec = PersonalizedRecommender()
+            trending_rec = TrendingRecommender()
 
-    except Exception as e:
-        # FIX: Add more detailed error logging to diagnose issues.
-        print(f"ERROR in recomm_home: {e}")
-        # traceback.print_exc()
-        personalized, trending = [], []
+            print(f"Fetching recommendations for user_id: {user_id}")
+            personalized = personalize_rec.get_recommendations(user_id) or []
+            print(f"Found {len(personalized)} personalized items.")
+            
+            trending = trending_rec.get_trending() or []
+            print(f"Found {len(trending)} trending items.")
 
-    
+        except Exception as e:
+            print(f"ERROR in recomm_home: {e}")
+            personalized, trending = [], []
+
+    # Get all products for the main display
     conn = get_recomm_db_connection()
-    all_products = conn.execute("SELECT * FROM products").fetchall()
+    all_products = conn.execute("SELECT * FROM products ORDER BY eco_score DESC").fetchall()
     conn.close()
-    # print(personalized, trending, all_products)
-
+    
     all_products_list = [dict(row) for row in all_products]
     
-    # return render_template("indexrecommendation.html", 
-    #     personalized=personalized, trending=trending, all_products=all_products)
     return jsonify({
         "personalized": personalized,
         "trending": trending,
-        "all_products": all_products_list
+        "all_products": all_products_list,
+        "current_user_id": user_id,
+        "search_results": [dict(row) for row in search_results] if search_results else [],
+        "query": query if query else ""
     })
+
+
+@app.route('/recommend/autocomplete')
+def recomm_autocomplete():
+    """
+    Provides JSON data for the search autocomplete feature.
+    Responds to AJAX requests from the recommendation page.
+    """
+    query = request.args.get('q', '').strip()
+    
+    if len(query) < 2:
+        return jsonify([])
+    
+    suggestions = search_products.get_autocomplete_suggestions(query)
+    return jsonify(suggestions)
+
 
 @app.route("/recommend/interact/<int:product_id>/<action>")
 def recomm_interact(product_id, action):
@@ -579,6 +609,8 @@ def getallproduct():
 
 # --- Main Execution ---
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5003)
+    app.run(debug=True, host="0.0.0.0", port=5003  )
+
+
 
 

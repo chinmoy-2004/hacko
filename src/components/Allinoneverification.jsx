@@ -235,6 +235,7 @@ const AllInOneVerification = () => {
       } else {
         setIsOpenmodal(true);
         if (response.data.status === 'success') {
+          setFraudDetails(null);
           runVerification();
         }
       }
@@ -258,32 +259,9 @@ const AllInOneVerification = () => {
     ref.current?.click();
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-5 w-5 text-[hsl(var(--verification-success))]" />;
-      case 'processing':
-        return <RefreshCw className="h-5 w-5 text-[hsl(var(--verification-processing))] animate-spin" />;
-      case 'failed':
-        return <AlertCircle className="h-5 w-5 text-[hsl(var(--verification-failed))]" />;
-      default:
-        return <Clock className="h-5 w-5 text-[hsl(var(--verification-pending))]" />;
-    }
-  };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-[hsl(var(--verification-success))]';
-      case 'processing':
-        return 'bg-[hsl(var(--verification-processing))]';
-      case 'failed':
-        return 'bg-[hsl(var(--verification-failed))]';
-      default:
-        return 'bg-[hsl(var(--verification-pending))]';
-    }
-  };
 
+  
   const runVerification = () => {
     setVerificationSteps(prev => prev.map(step => ({ ...step, status: 'pending', progress: 0 })));
 
@@ -696,78 +674,14 @@ const AllInOneVerification = () => {
                   </div>
                 </div>
 
-                {isGenerating && (
-                  <div className="space-y-2">
-                    <p className="text-sm text-[hsl(var(--text-secondary))]">Generating unique identifier...</p>
-                    <Progress value={67} className="w-full" />
-                  </div>
-                )}
+               
               </div>
             </div>
 
             {/* Blockchain Status */}
-            <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg space-y-4">
-              <h3 className="font-semibold flex items-center space-x-2">
-                <Link className="h-5 w-5 text-[hsl(var(--verification-blue))]" />
-                <span>🔁 Blockchain Hash Status</span>
-              </h3>
+         
 
-              <div className="space-y-3">
-                <div className="bg-[hsl(var(--button-secondary))] p-3 rounded-lg">
-                  <p className="text-sm text-[hsl(var(--text-secondary))] mb-2">Blockchain Hash:</p>
-                  <div className="flex items-center justify-between">
-                    <code className="text-xs font-mono bg-[hsl(var(--card-bg))] px-2 py-1 rounded break-all">
-                      {blockchainHash.substring(0, 40)}...
-                    </code>
-                    <Button
-                      onClick={() => copyToClipboard(blockchainHash, 'Blockchain Hash')}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Badge variant="success">Confirmed</Badge>
-                  <Badge variant="outline">Block: #9,847,523</Badge>
-                  <Badge variant="outline">Gas Used: 21,000</Badge>
-                </div>
-              </div>
-            </div>
-
-            {/* Trust Level */}
-            <div className="p-4 border border-[hsl(var(--card-border))] rounded-lg space-y-4">
-              <h3 className="font-semibold flex items-center space-x-2">
-                <Shield className="h-5 w-5 text-[hsl(var(--success-green))]" />
-                <span>🔒 Trust Level Assessment</span>
-              </h3>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[hsl(var(--text-secondary))]">Current Trust Level:</span>
-                  <Badge className={getTrustLevelColor(trustLevel)}>
-                    {trustLevel}
-                  </Badge>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Trust Score</span>
-                    <span className="text-sm font-semibold">{getTrustScore(trustLevel)}/100</span>
-                  </div>
-                  <Progress value={getTrustScore(trustLevel)} className="w-full" />
-                </div>
-
-                <div className="text-sm text-[hsl(var(--text-secondary))] space-y-1">
-                  <p>• Based on verification history</p>
-                  <p>• Document authenticity score</p>
-                  <p>• API validation results</p>
-                  <p>• Blockchain transaction integrity</p>
-                </div>
-              </div>
-            </div>
+           
 
             <Button
               className="w-full bg-[hsl(var(--eco-green))] hover:bg-[hsl(var(--eco-green))]/90 text-[hsl(var(--primary-foreground))]"
@@ -964,94 +878,7 @@ const AllInOneVerification = () => {
         </div>
       )}
 
-      {/* Visual Flow */}
-      {isOpenmodal && (
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-xl">🧬 Verification Journey</CardTitle>
-            <CardDescription>Track your verification progress in real-time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col space-y-4 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]" : "bg-[hsl(var(--eco-green))]"} rounded-full flex items-center justify-center text-[hsl(var(--primary-foreground))] font-bold`}>
-                    1
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">🏪 Seller Registration</h3>
-                    <p className="text-sm text-[hsl(var(--text-secondary))]">Business details & documents</p>
-                  </div>
-                </div>
-                <Badge variant={fraudDetails ? "error" : "success"}>
-                  {fraudDetails ? "Failed" : "Completed"}
-                </Badge>
-              </div>
-
-              <div className="flex items-center">
-                <div className={`w-1 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : "bg-[hsl(var(--eco-green))]/30"} ml-6`}></div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]" : "bg-[hsl(var(--verification-blue))]"} rounded-full flex items-center justify-center text-[hsl(var(--primary-foreground))] font-bold`}>
-                    2
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">✅ AI Verification</h3>
-                    <p className="text-sm text-[hsl(var(--text-secondary))]">UIDAI, NSDL & brand validation</p>
-                  </div>
-                </div>
-                <Badge variant={fraudDetails ? "error" : "info"}>
-                  {fraudDetails ? "Failed" : "Processing"}
-                </Badge>
-              </div>
-
-              <div className="flex items-center">
-                <div className={`w-1 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : "bg-[hsl(var(--button-secondary))]"} ml-6`}></div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : "bg-[hsl(var(--button-secondary))]"} rounded-full flex items-center justify-center ${fraudDetails ? "text-[hsl(var(--badge-error-text))]" : "text-[hsl(var(--text-secondary))]"} font-bold`}>
-                    3
-                  </div>
-                  <div>
-                    <h3 className={`font-semibold ${fraudDetails ? "text-[hsl(var(--badge-error-text))]" : "text-[hsl(var(--text-secondary))]"}`}>
-                      🆔 ID Generation
-                    </h3>
-                    <p className="text-sm text-[hsl(var(--text-secondary))]">Unique seller ID & blockchain</p>
-                  </div>
-                </div>
-                <Badge variant={fraudDetails ? "error" : "outline"}>
-                  {fraudDetails ? "Blocked" : "Pending"}
-                </Badge>
-              </div>
-
-              <div className="flex items-center">
-                <div className={`w-1 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : "bg-[hsl(var(--button-secondary))]"} ml-6`}></div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 ${fraudDetails ? "bg-[hsl(var(--badge-error))]/30" : "bg-[hsl(var(--button-secondary))]"} rounded-full flex items-center justify-center ${fraudDetails ? "text-[hsl(var(--badge-error-text))]" : "text-[hsl(var(--text-secondary))]"} font-bold`}>
-                    4
-                  </div>
-                  <div>
-                    <h3 className={`font-semibold ${fraudDetails ? "text-[hsl(var(--badge-error-text))]" : "text-[hsl(var(--text-secondary))]"}`}>
-                      🔗 EcoChain Link
-                    </h3>
-                    <p className="text-sm text-[hsl(var(--text-secondary))]">Final blockchain verification</p>
-                  </div>
-                </div>
-                <Badge variant={fraudDetails ? "error" : "outline"}>
-                  {fraudDetails ? "Blocked" : "Pending"}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
     </div>
   );
 };

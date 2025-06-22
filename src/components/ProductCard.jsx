@@ -138,9 +138,9 @@ const EcoProductCard = ({ product }) => {
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-green-700 mb-1">
-                      {verificationState.data.carbonSaved} kg
+                      {verificationState.data.carbonSaved} g Co2e
                     </div>
-                    <div className="text-green-600 text-sm">CO₂ emissions saved</div>
+                    <div className="text-green-600 text-sm">Carbon footprint contains</div>
                   </div>
                 </div>
 

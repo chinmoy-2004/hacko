@@ -129,8 +129,8 @@ const VerifyECT = () => {
                 <span>{result.certificateBody}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">CO₂ Saved:</span>
-                <span>{result.carbonSaved} kg</span>
+                <span className="text-gray-600">CO₂ contain:</span>
+                <span>{result.carbonSaved} g Co2e</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Issued:</span>

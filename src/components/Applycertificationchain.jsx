@@ -342,6 +342,7 @@ const ApplyCertification = () => {
                     <option value="Personal care">Personal care</option>
                     <option value="Household Goods">Household Goods</option>
                     <option value="Furniture">Furniture</option>
+                     <option value="Furniture">Fashion</option>
                   </select>
                 </div>
 
@@ -408,7 +409,7 @@ const ApplyCertification = () => {
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-medium text-gray-700 flex items-center">
                       <Leaf className="h-4 w-4 text-green-500 mr-2" />
-                      Carbon Estimation (kg CO₂)
+                      Carbon Estimation (g CO₂)
                     </label>
                     <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
                       Auto-calculated
@@ -425,7 +426,7 @@ const ApplyCertification = () => {
                         placeholder="0.00"
                         readOnly
                       />
-                      <span className="absolute right-3 top-3 text-gray-400">kg</span>
+                      <span className="absolute right-3 top-3 text-gray-400">g</span>
                     </div>
 
                     <button

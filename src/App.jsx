@@ -25,6 +25,7 @@ import AddProduct from './pages/Addproduct.jsx';
 import useEcochainStore from './store/ecochain.store.js';
 import { useCart } from './context/CartContext.jsx';
 import useSellerStore from './store/Seller.store.js';
+import Searchresult from './pages/Searchresult.jsx';
 
 const App = () => {
 
@@ -60,6 +61,7 @@ const App = () => {
         <Route path="/check-out" element={<CheckoutPage/>}/>
         <Route path="/orders" element={<Orders/>}/>
         <Route path="/edu" element={<Education/>}/>
+        <Route path='/search' element={<Searchresult/>}/>
       </Routes>
       <Footer/>
       <ToastContainer/>

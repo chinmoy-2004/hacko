@@ -174,8 +174,8 @@ certifications.
             <Leaf className="h-16 w-16 text-green-200" />
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-            Embrace Sustainable Living with 
-            <span className="text-green-200"> Smart AI</span>
+            How can you Achieve Sustainability 
+            <span className="text-green-200"> using GreenX ?</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto leading-relaxed opacity-90">
             Discover how everyday choices shape our planet's future. Join the movement towards eco-friendly living 

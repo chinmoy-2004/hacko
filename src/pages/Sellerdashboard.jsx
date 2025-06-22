@@ -2,17 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, DollarSign, Leaf, Award, Package, Users, ShoppingCart, Star, ArrowUp, ArrowDown, Zap, TreePine, Medal, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
 import useSellerStore from '../store/Seller.store.js';
 
 const EcoCertifiedProductsTable = () => {
-
-  const {downloadcertificate}=useSellerStore()
+  const { downloadcertificate, products } = useSellerStore();
   
-  const products=useSellerStore(state => state.products);
-
-  // Sample product data
-  const initialProducts = [
+  // Sample product data for fallback
+  const sampleProducts = [
     {
       ect_id: 'ECT-2023-001',
       product_name: 'Organic Cotton T-Shirt',
@@ -47,7 +43,6 @@ const EcoCertifiedProductsTable = () => {
     }
   ];
 
-  const [Products, setProducts] = useState(products? products : initialProducts);
   const [firstRowStatus, setFirstRowStatus] = useState('Pending');
   const [showFirstRowDownload, setShowFirstRowDownload] = useState(false);
 
@@ -55,16 +50,6 @@ const EcoCertifiedProductsTable = () => {
     const timer = setTimeout(() => {
       setFirstRowStatus('Complete');
       setShowFirstRowDownload(true);
-      
-      // Update the first product's certification status
-      setProducts(prevProducts => {
-        const updatedProducts = [...prevProducts];
-        updatedProducts[0] = {
-          ...updatedProducts[0],
-          eco_certified: true
-        };
-        return updatedProducts;
-      });
     }, 20000); // 20 seconds
 
     return () => clearTimeout(timer);
@@ -73,6 +58,9 @@ const EcoCertifiedProductsTable = () => {
   const handleDownload = async(ectId) => {
      await downloadcertificate(ectId);
   };
+
+  // Use products from store if available, otherwise use sample data
+  const displayProducts = products && products.length > 0 ? products : sampleProducts;
 
   return (
     <div className="mt-8">
@@ -91,7 +79,7 @@ const EcoCertifiedProductsTable = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {Products.map((product, index) => (
+            {displayProducts.map((product, index) => (
               <tr key={product.ect_id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {index === 0 ? (showFirstRowDownload ? product.ect_id : '') : product.ect_id}
@@ -142,19 +130,13 @@ const EcoCertifiedProductsTable = () => {
   );
 };
 
-
-
-
-
-
 const GreenXSellerDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
-
     const { fetchProducts } = useSellerStore();
 
     useEffect(() => {
         fetchProducts();
-    }, []);
+    }, [fetchProducts]);
 
     // Sample data
     const revenueData = [
@@ -265,7 +247,6 @@ const GreenXSellerDashboard = () => {
                                 <span>Verify & Add Product</span>
                             </button>
                         </Link>
-
                     </div>
                 </div>
             </div>
@@ -398,7 +379,6 @@ const GreenXSellerDashboard = () => {
                     </div>
                     <EcoCertifiedProductsTable />
                 </div>
-
             )}
 
             {activeTab === 'analytics' && (
@@ -553,6 +533,3 @@ const GreenXSellerDashboard = () => {
 };
 
 export default GreenXSellerDashboard;
-
-
-

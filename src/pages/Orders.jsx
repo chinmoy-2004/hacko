@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { Star } from "lucide-react";
+import {Link} from "react-router-dom"
 
 const orders = [
   {
     id: 1,
     title: "Bamboo Toothbrush | 100% Biodegradable & Eco-Friendly",
     price: 3.99,
-    image: "https://m.media-amazon.com/images/I/61FJHgUF9eL._AC_UL480_FMwebp_QL65_.jpg",
+    image: "https://m.media-amazon.com/images/I/61FJHgUF9eL.AC_UL480_FMwebp_QL65.jpg",
     rating: 5,
     pickupDate: "Wed Jun 25 2025",
   },
@@ -13,7 +15,7 @@ const orders = [
     id: 2,
     title: "Reusable Grocery Bags | Washable, Foldable & Eco Conscious (Set of 5)",
     price: 12.49,
-    image: "https://m.media-amazon.com/images/I/91CBOHTz1gL._AC_UL480_FMwebp_QL65_.jpg",
+    image: "https://m.media-amazon.com/images/I/91CBOHTz1gL.AC_UL480_FMwebp_QL65.jpg",
     rating: 4,
     pickupDate: "Wed Jun 25 2025",
   },
@@ -21,13 +23,19 @@ const orders = [
     id: 3,
     title: "Plant-Based Kitchen Sponge | Compostable & Plastic-Free (Pack of 6)",
     price: 6.99,
-    image: "https://m.media-amazon.com/images/I/71R0JUPL0HL._AC_UL480_FMwebp_QL65_.jpg",
+    image: "https://m.media-amazon.com/images/I/71R0JUPL0HL.AC_UL480_FMwebp_QL65.jpg",
     rating: 4,
     pickupDate: "Wed Jun 25 2025",
   },
 ];
 
 const Orders = () => {
+  const [boxReturned, setBoxReturned] = useState({});
+
+  const handleReturnBox = (id) => {
+    setBoxReturned((prev) => ({ ...prev, [id]: true }));
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold text-gray-800 border-b pb-4">Your Orders</h1>
@@ -61,16 +69,29 @@ const Orders = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col gap-2 mt-4 md:mt-0">
+          <div className="flex flex-col gap-2 mt-4 md:mt-0 w-[15vw]">
             <button className="bg-orange-300 hover:bg-orange-400 text-black font-medium py-2 px-4 rounded shadow">
               Return or Replace items
             </button>
             <button className="bg-orange-300 hover:bg-orange-400 text-black font-medium py-2 px-4 rounded shadow">
               Write a product review
             </button>
-            <button className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded shadow">
+            <button
+              onClick={() => handleReturnBox(order.id)}
+              disabled={boxReturned[order.id]}
+              className={`${
+                boxReturned[order.id]
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-green-500 hover:bg-green-600 text-white"
+              } font-medium py-2 px-4 rounded shadow`}
+            >
               Return the Box
             </button>
+            {boxReturned[order.id] && (
+              <div className="text-xs text-gray-600 italic mt-2">
+                *We will let you know when the threshold of your area is reached. <Link to="/edu">Learn more.</Link>
+              </div>
+            )}
           </div>
         </div>
       ))}
@@ -78,4 +99,4 @@ const Orders = () => {
   );
 };
 
-export default Orders;
+export default Orders;

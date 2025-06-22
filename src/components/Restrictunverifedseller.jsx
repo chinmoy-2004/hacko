@@ -59,7 +59,7 @@ const RestrictsellerModal = () => {
                                     to="/ecosense-ai"
                                     className="flex w-full items-center justify-center rounded-lg bg-green-500 hover:bg-green-600 px-6 py-3 text-white shadow-lg transition-all hover:from-indigo-700 hover:to-purple-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                 >
-                                    Verify on EcoChain AI
+                                    Verify on Ecosense AI
                                     <ArrowUpRight className="ml-2 h-4 w-4" />
                                 </Link>
                             </div>

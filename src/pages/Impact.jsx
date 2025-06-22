@@ -12,13 +12,14 @@ const Impact = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   const scrollToLiveSection = () => {
-  const liveSection = document.getElementById("live-section");
-  if (liveSection) {
-    liveSection.scrollIntoView({ behavior: "smooth",
-      duration: 1000
-    });
-  }
-};
+    const liveSection = document.getElementById("live-section");
+    if (liveSection) {
+      liveSection.scrollIntoView({
+        behavior: "smooth",
+        duration: 1000
+      });
+    }
+  };
 
 
   useEffect(() => {
@@ -50,13 +51,13 @@ const Impact = () => {
     <div className="min-h-screen bg-off-white">
       {/* Hero Section */}
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `linear-gradient(rgba(31, 70, 44, 0.2), rgba(31, 59, 44, 0.8)), url('https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`
           }}
         />
-        
+
         <div className={`relative z-20 text-center text-white px-6`}>
           <h1 className="font-serif text-6xl md:text-8xl font-bold mb-6 leading-tight">
             Our Impact
@@ -64,21 +65,21 @@ const Impact = () => {
           <p className=" text-xl md:text-2xl max-w-3xl mx-auto font-light leading-relaxed">
             Every choice you make leaves a mark. Here's how we're making sure it's a green one.
           </p>
-          
+
           <div className="mt-12 flex justify-center">
-  <button onClick={scrollToLiveSection} className="animate-bounce hover:bg-white/10 rounded-full p-4">
-    <ArrowUp className="w-8 h-8 text-mint rotate-180" />
-  </button>
-</div>
+            <button onClick={scrollToLiveSection} className="animate-bounce hover:bg-white/10 rounded-full p-4">
+              <ArrowUp className="w-8 h-8 text-mint rotate-180" />
+            </button>
+          </div>
 
         </div>
       </section>
 
       {/* Live Counters */}
       {/* Live Counters */}
-<section id="live-section">
-  <LiveCounters />
-</section>
+      <section id="live-section">
+        <LiveCounters />
+      </section>
 
 
       {/* Reports Section */}
@@ -202,47 +203,94 @@ const Impact = () => {
 
       {/* Stories Section */}
       <StorySection />
-      <div className=" bg-white max-w-screen-xl mb-10 mx-auto rounded-3xl shadow-2xl py-20 px-6 border-t border-green-100">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#1F3B2C] mb-6 flex items-center justify-center gap-2">
-            <Building2 className="w-8 h-8 text-green-700" />
-            Partner with Us
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-12">
-            Are you a small business, sustainable startup, or eco-conscious brand? Let's collaborate to amplify impact and grow together.
-          </p>
+      <div className="max-w-screen-xl mb-10 mx-auto rounded-3xl shadow-2xl overflow-hidden border-t border-green-100">
+        <div className="grid md:grid-cols-2 gap-0">
 
-          <form className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-            <div className="flex flex-col">
-              <label htmlFor="name" className="text-sm text-gray-700 font-medium">Full Name</label>
-              <input type="text" id="name" name="name" placeholder="Jane Doe" className="mt-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none" />
-            </div>
-            <div className="flex flex-col">
-              <label htmlFor="email" className="text-sm text-gray-700 font-medium">Email</label>
-              <input type="email" id="email" name="email" placeholder="jane@example.com" className="mt-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none" />
-            </div>
-            <div className="flex flex-col md:col-span-2">
-              <label htmlFor="company" className="text-sm text-gray-700 font-medium">Company Name</label>
-              <input type="text" id="company" name="company" placeholder="EcoWave Pvt Ltd" className="mt-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none" />
-            </div>
-            <div className="flex flex-col md:col-span-2">
-              <label htmlFor="message" className="text-sm text-gray-700 font-medium">Message</label>
-              <textarea id="message" name="message" rows="4" placeholder="Tell us about your sustainability journey or how you'd like to collaborate..." className="mt-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none" />
-            </div>
-            <div className="md:col-span-2 flex justify-center">
-              <button
-                type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-md flex items-center gap-2 transition"
-              >
-                <Mail className="w-5 h-5" />
-                Send Message
-              </button>
-            </div>
-          </form>
+          {/* LEFT COLUMN - B2B Use Cases */}
+          <div
+            className="relative p-12 text-white"
+            style={{
+              backgroundImage:
+                "linear-gradient(to bottom right, rgba(22, 101, 52, 0.6), rgba(34, 197, 94, 0.5)), url('https://images.unsplash.com/photo-1598970434795-0c54fe7c0642?auto=format&fit=crop&w=1470&q=80')",
+              backgroundSize: "cover",
+              backgroundPosition: "center"
+            }}
+          >
+            <div className="bg-white bg-opacity-90 rounded-xl p-8 text-gray-800 shadow-lg">
+              <h2 className="text-3xl font-extrabold text-green-800 mb-6 tracking-tight leading-snug">
+                Why Businesses Choose Green<span className="text-green-600">X</span>
+              </h2>
 
-          <p className="text-sm text-gray-500 mt-6">
-            We typically respond within 2–3 business days.
-          </p>
+              <div className="space-y-6 leading-normal">
+                <div>
+                  <h3 className="text-green-700 text-xl font-bold mb-1">Supply Chain Traceability for Brands</h3>
+                  <p>A sustainable clothing brand (Seller A) verifies raw material sourcing from Supplier B via EcoChain Trace blockchain — enabling transparent audits.</p>
+                </div>
+                <div>
+                  <h3 className="text-green-700 text-xl font-bold mb-1">Sustainability-as-a-Service (SaaS)</h3>
+                  <p>GreenX provides CarbonKarma AI API to e-commerce platforms for automatic carbon footprint calculation — helping meet ESG compliance goals.</p>
+                </div>
+                <div>
+                  <h3 className="text-green-700 text-xl font-bold mb-1">RePack AI for Packaging Optimization</h3>
+                  <p>Businesses streamline packaging in logistics, warehousing, and deliveries with RePack AI — cutting waste and emissions.</p>
+                </div>
+                <div>
+                  <h3 className="text-green-700 text-xl font-bold mb-1">Green Certification for Small Sellers</h3>
+                  <p>Local farmers and artisans use EcoSense AI and blockchain to get verified and onboard with bigger brands securely and transparently.</p>
+                </div>
+                <div>
+                  <h3 className="text-green-700 text-xl font-bold mb-1">Carbon Credit Marketplace</h3>
+                  <p>Businesses can sell or buy carbon credits using GreenX smart contracts — enabling traceable and fair carbon offsetting.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN - FORM */}
+          <div className="bg-white py-20 px-10">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#1F3B2C] mb-6 flex items-center justify-center gap-2">
+                <Building2 className="w-8 h-8 text-green-700" />
+                Partner with Us
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-12">
+                Are you a small business, sustainable startup, or eco-conscious brand? Let's collaborate to amplify impact and grow together.
+              </p>
+
+              <form className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <div className="flex flex-col">
+                  <label htmlFor="name" className="text-sm text-gray-700 font-medium">Full Name</label>
+                  <input type="text" id="name" name="name" placeholder="Jane Doe" className="mt-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none" />
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="email" className="text-sm text-gray-700 font-medium">Email</label>
+                  <input type="email" id="email" name="email" placeholder="jane@example.com" className="mt-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none" />
+                </div>
+                <div className="flex flex-col md:col-span-2">
+                  <label htmlFor="company" className="text-sm text-gray-700 font-medium">Company Name</label>
+                  <input type="text" id="company" name="company" placeholder="EcoWave Pvt Ltd" className="mt-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none" />
+                </div>
+                <div className="flex flex-col md:col-span-2">
+                  <label htmlFor="message" className="text-sm text-gray-700 font-medium">Message</label>
+                  <textarea id="message" name="message" rows="4" placeholder="Tell us about your sustainability journey or how you'd like to collaborate..." className="mt-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none" />
+                </div>
+                <div className="md:col-span-2 flex justify-center">
+                  <button
+                    type="submit"
+                    className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-md flex items-center gap-2 transition"
+                  >
+                    <Mail className="w-5 h-5" />
+                    Send Message
+                  </button>
+                </div>
+              </form>
+
+              <p className="text-sm text-gray-500 mt-6">
+                We typically respond within 2–3 business days.
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
