@@ -1,6 +1,3 @@
-# Python cache
-__pycache__/
-*.py[cod]
 
 # Node & frontend
 node_modules/
@@ -11,7 +8,7 @@ node_modules/
 Backend/.env        # Backend .env (if you keep one there)
 
 # Python virtual environment
-.venv/              # Root venv folder
+Backend/.venv/          # Root venv folder
 
 # VS Code settings
 .vscode/*
