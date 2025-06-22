@@ -8,7 +8,7 @@ node_modules/
 Backend/.env        # Backend .env (if you keep one there)
 
 # Python virtual environment
-Backend/.venv/          # Root venv folder
+Backend/venv/          # Root venv folder
 
 # VS Code settings
 .vscode/*
