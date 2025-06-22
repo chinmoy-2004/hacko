@@ -3,14 +3,9 @@
 node_modules/
 
 
-# Local env files
-.env                # Root .env
-Backend/.env        # Backend .env (if you keep one there)
+# Root .env file
+.env
 
-# Python virtual environment
-Backend/venv/          # Root venv folder
-
-# VS Code settings
-.vscode/*
-!.vscode/extensions.json
-
+# Backend folder .env and venv
+Backend/.env
+Backend/venv/
