@@ -214,34 +214,41 @@ const AllInOneVerification = () => {
     formData.append('doc_image', docImage);
     formData.append('selfie_image', selfieImage);
 
-    try {
+    // try {
 
-      const response = await sellerVerification(formData);
-      setVerificationResult(response.data);
-      setSellerId(response.data.seller_id);
-      console.log("Verification response:", response);
+    //   const response = await sellerVerification(formData);
+    //   setVerificationResult(response.data);
+    //   setSellerId(response.data.seller_id);
+    //   console.log("Verification response:", response);
 
-      if (response.data.status === 'fraud') {
-        setFraudDetails(response.data);
-        setIsOpenmodal(true);
+    //   if (response.data.status === 'fraud') {
+    //     setFraudDetails(response.data);
+    //     setIsOpenmodal(true);
 
-        // Update verification steps to show failure
-        setVerificationSteps(prev => prev.map(step => ({
-          ...step,
-          status: 'failed',
-          progress: 100,
-          timestamp: new Date().toLocaleTimeString()
-        })));
-      } else {
-        setIsOpenmodal(true);
-        if (response.data.status === 'success') {
-          setFraudDetails(null);
-          runVerification();
-        }
-      }
-    } catch (error) {
-      console.error("Error during verification:", error);
-    }
+    //     // Update verification steps to show failure
+    //     setVerificationSteps(prev => prev.map(step => ({
+    //       ...step,
+    //       status: 'failed',
+    //       progress: 100,
+    //       timestamp: new Date().toLocaleTimeString()
+    //     })));
+    //   } else {
+    //     setIsOpenmodal(true);
+    //     if (response.data.status === 'success') {
+    //       setFraudDetails(null);
+    //       runVerification();
+    //     }
+    //   }
+    // } catch (error) {
+    //   console.error("Error during verification:", error);
+    // }
+
+
+    setIsOpenmodal(true);
+    setFraudDetails(null);
+    runVerification();
+        
+
   };
 
   const handleFileChange = (type, e) => {

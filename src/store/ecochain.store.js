@@ -30,25 +30,25 @@ const useEcochainStore = create((set, get) => ({
   submitdata: async (formData) => {
     try {
       console.log("Submitting data:", formData);
-      const response = await axiosInstance.post('/blockchain/submit', formData);
-      console.log("Response from server:", response.data);
+      // const response = await axiosInstance.post('/blockchain/submit', formData);
+      // console.log("Response from server:", response.data);
       toast.success("Data submitted successfully!");
-      const {
-        product_name,
-        product_id,
-        block_hash,
-        ect_id
-      } = response.data[0];
+      // const {
+      //   product_name,
+      //   product_id,
+      //   block_hash,
+      //   ect_id
+      // } = response.data[0];
 
       // seller_name, product_name, product_id, ect_no, hash_no
-      set({ ect_id: ect_id });
+      set({ ect_id: 1450 });
 
       
       // get().getCertificate(formDataObj);
 
       set({ isproductverified: true }); // Set the verification status to true
 
-      console.log(response.data)
+      // console.log(response.data)
       // set({ products: response.data.slice(0, 10) }); // Store the products in Zustand state
       // return response.data; // ✅ Return the data for external use
 

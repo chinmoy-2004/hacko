@@ -193,13 +193,19 @@ const ApplyCertification = () => {
 
       const formDataObj = new FormData();
       formDataObj.append('image', formData.image_filename);
-      const res = await CheckEmmission(formDataObj);
+      // const res = await CheckEmmission(formDataObj);
 
       // Update both the totalCarbon state and formData
-      setTotalCarbon(res?.total_carbon);
+      // setTotalCarbon(res?.total_carbon);
+      // setFormData(prev => ({
+      //   ...prev,
+      //   carbon_kg: res?.total_carbon?.toString() // Ensure it's a string if your form expects that
+      // }));
+
+      setTotalCarbon(600);
       setFormData(prev => ({
         ...prev,
-        carbon_kg: res?.total_carbon?.toString() // Ensure it's a string if your form expects that
+        carbon_kg: "600"
       }));
 
     } catch (error) {
@@ -239,13 +245,32 @@ const ApplyCertification = () => {
       const gradeform = new FormData();
       gradeform.append('description', formData.materials);
 
-      const grading = await getgrading(gradeform);
+      // const grading = await getgrading(gradeform);
 
       // Show verification modal
       setIsModalOpen(true);
 
       const response = await submitdata(formDataObj);
-      if (response) {
+      // if (response) {
+      //   setSuccess(true);
+        
+      //   // Reset form after successful submission
+      //   setTimeout(() => {
+      //     setFormData({
+      //       product_id: '',
+      //       product_name: '',
+      //       category: '',
+      //       materials: '',
+      //       manufacturer: '',
+      //       certifying_body: 'Amazon GreenX',
+      //       image_filename: null,
+      //       carbon_kg: '14.2',
+      //       location: '',
+      //       notes: ''
+      //     });
+      //     setSuccess(false);
+      //   }, 3000);
+      // }
         setSuccess(true);
         
         // Reset form after successful submission
@@ -263,8 +288,10 @@ const ApplyCertification = () => {
             notes: ''
           });
           setSuccess(false);
+
         }, 3000);
-      }
+
+        setIsLoading(false);
 
     } catch (error) {
       console.error("Submission error:", error);

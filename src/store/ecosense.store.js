@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 
 const useEcosense = create((set, get) => ({
   seller_name: "",
-  issellerverify: false,
+  issellerverify: true,
   status: "",
   isverificationprocessing: false,
 

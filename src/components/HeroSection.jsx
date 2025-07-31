@@ -7,13 +7,13 @@ import { Link } from "react-router-dom";
 import { Building2, TreePine, PackageCheck, ScanBarcode, CloudCheck} from "lucide-react";
 
 const categories = [
-  { title: "Home & Kitchen", image: "/src/assets/home/home.jpg" },
-  { title: "Cleaning", image: "/src/assets/home/cleaning.jpg" },
-  { title: "Hair Care", image: "/src/assets/home/haircare.jpg" },
-  { title: "Laundry", image: "/src/assets/home/laundry.webp" },
-  { title: "Bathroom", image: "/src/assets/home/bathroom.jpg" },
-  { title: "Outdoor Living", image: "/src/assets/home/outdoor.jpg" },
-  { title: "Personal Hygiene", image: "/src/assets/home/personal.jpg" },
+  { title: "Home & Kitchen", image: "/home.jpg" },
+  { title: "Cleaning", image: "/cleaning.jpg" },
+  { title: "Hair Care", image: "/haircare.jpg" },
+  { title: "Laundry", image: "/laundry.webp" },
+  { title: "Bathroom", image: "/bathroom.jpg" },
+  { title: "Outdoor Living", image: "/outdoor.jpg" },
+  { title: "Personal Hygiene", image: "/personal.jpg" },
 ];
 
 const sustainableApps = [

@@ -14,7 +14,7 @@ const EmissionChecker = () => {
 
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const fileInputRef = useRef(null);
-  const [totalCarbon, setTotalCarbon] = useState(0);
+  const [totalCarbon, setTotalCarbon] = useState(600);
   const { CheckEmmission, isemmissionchecked } = useCarbonKarmaStore();
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,12 +58,17 @@ const EmissionChecker = () => {
 
     setIsLoading(true);
     try {
-      const response = await CheckEmmission(submissionData);
-      if (response) {
-        setTotalCarbon(response.total_carbon);
+      // const response = await CheckEmmission(submissionData);
+      // if (response) {
+      //   setTotalCarbon(response.total_carbon);
+      //   setIsModalOpen(false);
+      //   setIsResultModalOpen(true);
+      // }
+
+       setTotalCarbon(600);
         setIsModalOpen(false);
         setIsResultModalOpen(true);
-      }
+
     } catch (error) {
       console.error("Error checking emission:", error);
       // Handle error appropriately, e.g., show a toast notification

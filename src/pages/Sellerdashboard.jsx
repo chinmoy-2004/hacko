@@ -50,7 +50,7 @@ const EcoCertifiedProductsTable = () => {
     const timer = setTimeout(() => {
       setFirstRowStatus('Complete');
       setShowFirstRowDownload(true);
-    }, 20000); // 20 seconds
+    }, 2000); 
 
     return () => clearTimeout(timer);
   }, []);

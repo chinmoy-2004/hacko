@@ -124,7 +124,7 @@ const Header = ({ cartItemCount, onCartClick }) => {
                     <div className="flex items-center space-x-3">
                         <Link to="/" className="flex items-center space-x-1 cursor-pointer">
                             <img
-                                src='/src/assets/home/amazon.png'
+                                src='/amazon.png'
                                 alt="Amazon Logo"
                                 className="h-7 object-contain text-amber-50"
                             />
